@@ -2,12 +2,14 @@ from pico2d import *
 import game_input
 import game_world
 from player import Player
+from constant_value import SCREEN_W, SCREEN_H
 
 
 def init():
     global game_enable
 
     game_enable = True
+    open_canvas(SCREEN_W, SCREEN_H)
     init_world()
 
     return True
@@ -19,6 +21,8 @@ def run():
         update_world()
         render_world()
         delay(0.01)
+
+    close_canvas()
         
         
 def init_world():
