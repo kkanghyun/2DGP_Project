@@ -1,7 +1,7 @@
 # 이것은 각 상태들을 객체로 구현한 것임.
 
-from pico2d import get_time, load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
-from game_value import SCREEN_X, SCREEN_Y
+from pico2d import get_time, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
+from game_utility import load_image, SCREEN_X, SCREEN_Y
 
 # state event check
 # ( state event type, event value )
@@ -33,57 +33,57 @@ def time_out(e):
 class Idle:
 
     @staticmethod
-    def enter(boy, e):
-        if boy.face_dir == -1:
-            boy.action = 2
-        elif boy.face_dir == 1:
-            boy.action = 3
-        boy.dir = 0
-        boy.frame = 0
+    def enter(player, e):
+        if player.face_dir == -1:
+            player.action = 2
+        elif player.face_dir == 1:
+            player.action = 3
+        player.dir = 0
+        player.frame = 0
         pass
 
     @staticmethod
-    def exit(boy, e):
+    def exit(player, e):
         pass
 
     @staticmethod
-    def update(boy):
-        boy.frame = (boy.frame + 1) % 8
+    def update(player):
+        player.frame = (player.frame + 1) % 8
         pass
 
     @staticmethod
-    def draw(boy):
-        boy.image.clip_draw(boy.frame * 100, boy.action * 100, 100, 100, boy.x, boy.y)
+    def draw(player):
+        player.image.clip_draw(player.frame * 100, player.action * 100, 100, 100, player.x, player.y)
 
 
 
 class Run:
 
     @staticmethod
-    def enter(boy, e):
+    def enter(player, e):
         if right_down(e) or left_up(e): # 오른쪽으로 RUN
-            boy.dir, boy.action, boy.face_dir = 1, 1, 1
+            player.dir, player.action, player.face_dir = 1, 1, 1
         elif left_down(e) or right_up(e): # 왼쪽으로 RUN
-            boy.dir, boy.action, boy.face_dir = -1, 0, -1
+            player.dir, player.action, player.face_dir = -1, 0, -1
 
     @staticmethod
-    def exit(boy, e):
+    def exit(player, e):
         pass
 
     @staticmethod
-    def update(boy):
-        boy.frame = (boy.frame + 1) % 8
-        boy.x += boy.dir * 5
+    def update(player):
+        player.frame = (player.frame + 1) % 8
+        player.x += player.dir * 5
         pass
 
     @staticmethod
-    def draw(boy):
-        boy.image.clip_draw(boy.frame * 100, boy.action * 100, 100, 100, boy.x, boy.y)
+    def draw(player):
+        player.image.clip_draw(player.frame * 100, player.action * 100, 100, 100, player.x, player.y)
 
 
 class StateMachine:
-    def __init__(self, boy):
-        self.boy = boy
+    def __init__(self, player):
+        self.player = player
         self.cur_state = Idle
         self.transitions = {
             Idle: {right_down: Run, left_down: Run, left_up: Run, right_up: Run},
@@ -91,23 +91,23 @@ class StateMachine:
         }
 
     def start(self):
-        self.cur_state.enter(self.boy, ('NONE', 0))
+        self.cur_state.enter(self.player, ('NONE', 0))
 
     def update(self):
-        self.cur_state.update(self.boy)
+        self.cur_state.update(self.player)
 
     def handle_event(self, e):
         for check_event, next_state in self.transitions[self.cur_state].items():
             if check_event(e):
-                self.cur_state.exit(self.boy, e)
+                self.cur_state.exit(self.player, e)
                 self.cur_state = next_state
-                self.cur_state.enter(self.boy, e)
+                self.cur_state.enter(self.player, e)
                 return True
 
         return False
 
     def draw(self):
-        self.cur_state.draw(self.boy)
+        self.cur_state.draw(self.player)
 
 
 
@@ -120,7 +120,7 @@ class Player:
         self.action = 3
         self.face_dir = 1
         self.dir = 0
-        self.image = load_image('..\\res\\player.png')
+        self.image = load_image('player.png')
         self.state_machine = StateMachine(self)
         self.state_machine.start()
 
