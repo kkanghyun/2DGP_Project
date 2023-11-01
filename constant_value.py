@@ -1,2 +1,0 @@
-SCREEN_W = 960
-SCREEN_H = 640
