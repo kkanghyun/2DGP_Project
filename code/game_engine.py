@@ -1,6 +1,7 @@
 from pico2d import *
 
 import game_world
+from background import Background
 from player import Player
 
 
@@ -16,18 +17,12 @@ def handle_events():
             running = False
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             running = False
-        else:
-            player.handle_event(event)
 
 
 def create_world():
     global running
-    global player
 
     running = True
-
-    player = Player()
-    game_world.add_object(player, 1)
 
 
 open_canvas()

@@ -5,7 +5,9 @@ class Background:
         self.image = load_image('background.png')
 
     def draw(self):
-        self.image.draw(400, 300)
+        w = self.image.w
+        h = self.image.h
+        self.image.clip_draw(0, 0, w, h, w, h, w * 2, h * 2)
 
     def update(self):
         pass
