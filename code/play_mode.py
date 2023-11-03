@@ -1,12 +1,8 @@
-from pico2d import *
-
 import game_framework
 import game_world
+from pico2d import *
 from background import Background
 from player import Player
-
-
-# Game object class here
 
 
 def handle_events():

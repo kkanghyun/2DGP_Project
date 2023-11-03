@@ -1,7 +1,7 @@
 # 이것은 각 상태들을 객체로 구현한 것임.
 
 from pico2d import get_time, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
-from game_utility import load_image, SCREEN_X, SCREEN_Y
+from game_utility import load_image, cal_speed_pps, SCREEN_X, SCREEN_Y, DELTA_TIME
 
 # state event check
 # ( state event type, event value )
@@ -21,8 +21,10 @@ def left_down(e):
 def left_up(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_LEFT
 
+
 def space_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_SPACE
+
 
 def time_out(e):
     return e[0] == 'TIME_OUT'
@@ -42,19 +44,21 @@ class Idle:
         player.frame = 0
         pass
 
+
     @staticmethod
     def exit(player, e):
         pass
+
 
     @staticmethod
     def update(player):
         player.frame = (player.frame + 1) % 8
         pass
 
+
     @staticmethod
     def draw(player):
         player.image.clip_draw(player.frame * 100, player.action * 100, player.w, player.h, player.x, player.y)
-
 
 
 class Run:
@@ -66,15 +70,18 @@ class Run:
         elif left_down(e) or right_up(e): # 왼쪽으로 RUN
             player.dir, player.action, player.face_dir = -1, 0, -1
 
+
     @staticmethod
     def exit(player, e):
         pass
 
+
     @staticmethod
     def update(player):
         player.frame = (player.frame + 1) % 8
-        player.x += player.dir * 5
+        player.x += player.dir * player.velocity * DELTA_TIME
         pass
+
 
     @staticmethod
     def draw(player):
@@ -90,11 +97,14 @@ class StateMachine:
             Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle},
         }
 
+
     def start(self):
         self.cur_state.enter(self.player, ('NONE', 0))
 
+
     def update(self):
         self.cur_state.update(self.player)
+
 
     def handle_event(self, e):
         for check_event, next_state in self.transitions[self.cur_state].items():
@@ -106,11 +116,9 @@ class StateMachine:
 
         return False
 
+
     def draw(self):
         self.cur_state.draw(self.player)
-
-
-
 
 
 class Player:
@@ -120,6 +128,7 @@ class Player:
         self.action = 3
         self.face_dir = 1
         self.dir = 0
+        self.velocity = cal_speed_pps(20.0)
         self.image = load_image('player.png')
         self.w, self.h = 100, 100
         self.state_machine = StateMachine(self)

@@ -1,3 +1,6 @@
+import time
+from game_utility import set_delta_time
+
 running = None
 stack = None
 
@@ -45,7 +48,14 @@ def run(start_mode):
     stack = [start_mode]
     start_mode.init()
 
+
+    current_time = time.time()
     while (running):
+        delta_time = time.time() - current_time     # 한 장의 프레임을 만드는데 걸리는 시간
+        set_delta_time(delta_time)
+        # frame_rate = 1.0 / delta_time     # 초당 프레임 개수
+        current_time += delta_time
+
         stack[-1].handle_events()
         stack[-1].update()
         stack[-1].draw()

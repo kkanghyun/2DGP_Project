@@ -1,6 +1,5 @@
-from pico2d import *
-
 import game_world
+from pico2d import *
 from background import Background
 from player import Player
 
