@@ -1,7 +1,9 @@
 # 이것은 각 상태들을 객체로 구현한 것임.
 
+import game_engine
 from pico2d import get_time, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
-from game_utility import load_image, cal_speed_pps, SCREEN_X, SCREEN_Y, DELTA_TIME
+from game_utility import load_image, cal_speed_pps, SCREEN_X, SCREEN_Y
+
 
 # state event check
 # ( state event type, event value )
@@ -79,7 +81,7 @@ class Run:
     @staticmethod
     def update(player):
         player.frame = (player.frame + 1) % 8
-        player.x += player.dir * player.velocity * DELTA_TIME
+        player.x += player.dir * player.velocity * game_engine.delta_time
         pass
 
 
