@@ -5,6 +5,12 @@ from pico2d import draw_rectangle, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT
 from game_utility import load_image, cal_speed_pps, SCREEN_X, SCREEN_Y
 
 
+# animation frame velocity
+TIME_PER_ACTION = 0.5
+ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
+FRAMES_PER_ACTION = 8
+
+
 # state event check
 # ( state event type, event value )
 
@@ -54,13 +60,12 @@ class Idle:
 
     @staticmethod
     def update(player):
-        player.frame = (player.frame + 1) % 8
-        pass
+        player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_engine.delta_time) % FRAMES_PER_ACTION
 
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(player.frame * 100, player.action * 100, player.w, player.h, player.x, player.y)
+        player.image.clip_draw(int(player.frame) * 100, player.action * 100, player.w, player.h, player.x, player.y)
 
 
 class Run:
@@ -80,14 +85,13 @@ class Run:
 
     @staticmethod
     def update(player):
-        player.frame = (player.frame + 1) % 8
+        player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_engine.delta_time) % FRAMES_PER_ACTION
         player.x += player.dir * player.velocity * game_engine.delta_time
-        pass
 
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(player.frame * 100, player.action * 100, player.w, player.h, player.x, player.y)
+        player.image.clip_draw(int(player.frame) * 100, player.action * 100, player.w, player.h, player.x, player.y)
 
 
 class StateMachine:
