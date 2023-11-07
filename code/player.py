@@ -1,7 +1,7 @@
 # 이것은 각 상태들을 객체로 구현한 것임.
 
 import game_engine
-from pico2d import get_time, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
+from pico2d import draw_rectangle, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
 from game_utility import load_image, cal_speed_pps, SCREEN_X, SCREEN_Y
 
 
@@ -72,7 +72,7 @@ class Run:
         elif left_down(e) or right_up(e): # 왼쪽으로 RUN
             player.dir, player.action, player.face_dir = -1, 0, -1
 
-
+  
     @staticmethod
     def exit(player, e):
         pass
@@ -149,10 +149,11 @@ class Player:
 
     def draw(self):
         self.state_machine.draw()
+        draw_rectangle(*self.get_bb())
 
         
     def get_bb(self):
-        return self.x - 20, self.y - 50, self.x + 20, self.y + 50
+        return self.x - 21, self.y - 36, self.x + 21, self.y + 46
 
 
     def handle_collision(self, group, other):

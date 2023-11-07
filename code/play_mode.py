@@ -31,6 +31,8 @@ def init():
     hurdle = Hurdle()
     game_world.add_object(hurdle, 1)
 
+    game_world.add_collision_pair('player:hurdle', player, hurdle)
+
 
 def finish():
     game_world.clear()
@@ -39,6 +41,7 @@ def finish():
 
 def update():
     game_world.update()
+    game_world.handle_collisions()
 
 
 def draw():
