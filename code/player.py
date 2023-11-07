@@ -124,6 +124,8 @@ class StateMachine:
 
 
 class Player:
+    images = None
+
     def __init__(self):
         self.x, self.y = SCREEN_X // 2, SCREEN_Y // 2
         self.frame = 0
@@ -131,7 +133,7 @@ class Player:
         self.face_dir = 1
         self.dir = 0
         self.velocity = cal_speed_pps(20.0)
-        self.image = load_image('player.png')
+        Player.image = load_image('player.png')
         self.w, self.h = 100, 100
         self.state_machine = StateMachine(self)
         self.state_machine.start()
@@ -147,3 +149,11 @@ class Player:
 
     def draw(self):
         self.state_machine.draw()
+
+        
+    def get_bb(self):
+        return self.x - 20, self.y - 50, self.x + 20, self.y + 50
+
+
+    def handle_collision(self, group, other):
+        pass

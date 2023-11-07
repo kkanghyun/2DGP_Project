@@ -40,7 +40,6 @@ def draw():
     clear_canvas()
     game_world.render()
     update_canvas()
-    pico2d.delay(0.01)
 
 
 def pause():

@@ -1,10 +1,6 @@
 import time
 
 
-running = None
-stack = None
-
-
 def change_mode(mode):
     global stack
     if (len(stack) > 0):
@@ -51,13 +47,14 @@ def run(start_mode):
 
     current_time = time.time()
     while (running):
-        delta_time = time.time() - current_time     # 한 장의 프레임을 만드는데 걸리는 시간
-        # frame_rate = 1.0 / delta_time     # 초당 프레임 개수
-        current_time += delta_time
 
         stack[-1].handle_events()
         stack[-1].update()
         stack[-1].draw()
+        
+        delta_time = time.time() - current_time     # 한 장의 프레임을 만드는데 걸리는 시간
+        current_time += delta_time
+        # frame_rate = 1.0 / delta_time     # 초당 프레임 개수
 
     # repeatedly delete the top of the stack
     while (len(stack) > 0):
