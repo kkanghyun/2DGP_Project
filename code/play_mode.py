@@ -3,6 +3,7 @@ import game_world
 from pico2d import *
 from background import Background
 from player import Player
+from hurdle import Hurdle
 
 
 def handle_events():
@@ -19,12 +20,16 @@ def handle_events():
 def init():
     global background
     global player
+    global hurdle
 
     background = Background()
-    game_world.add_object(background, 1)
+    game_world.add_object(background, 0)
 
     player = Player()
     game_world.add_object(player, 1)
+    
+    hurdle = Hurdle()
+    game_world.add_object(hurdle, 1)
 
 
 def finish():
