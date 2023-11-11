@@ -20,7 +20,7 @@ def handle_events():
 def init():
     global background
     global player
-    global hurdle
+    global hurdles
 
     background = Background()
     game_world.add_object(background, 0)
@@ -28,10 +28,12 @@ def init():
     player = Player(100, 100)
     game_world.add_object(player, 1)
     
-    hurdle = Hurdle(500, 100)
-    game_world.add_object(hurdle, 2)
+    hurdles = [Hurdle(400 + 200 * i , 100) for i in range(3)]
+    game_world.add_objects(hurdles, 2)
 
-    game_world.add_collision_pair('player:hurdle', player, hurdle)
+    game_world.add_collision_pair('player:hurdle', player, None)
+    for hurdle in hurdles:
+        game_world.add_collision_pair('player:hurdle', None, hurdle)
 
 
 def finish():
