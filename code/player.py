@@ -5,10 +5,6 @@ from pico2d import draw_rectangle, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT
 from game_utility import load_image, cal_speed_pps, SCREEN_W, SCREEN_H
 
 
-# value
-player_animations = ('left_run', 'right_run', 'left_idle', 'right_idle')
-
-
 # animation frame velocity
 TIME_PER_ACTION = 0.5
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
@@ -46,7 +42,7 @@ class Idle:
 
     @staticmethod
     def draw(player):
-        player.images.clip_draw(int(player.frame) * player.w, player_animations.index(player.action) * player.h, player.w, player.h, player.x, player.y)
+        player.images.clip_draw(int(player.frame) * player.w, player.animations.index(player.action) * player.h, player.w, player.h, player.x, player.y)
 
 
 class Run:
@@ -76,7 +72,7 @@ class Run:
 
     @staticmethod
     def draw(player):
-        player.images.clip_draw(int(player.frame) * player.w, player_animations.index(player.action) * player.h, player.w, player.h, player.x, player.y)
+        player.images.clip_draw(int(player.frame) * player.w, player.animations.index(player.action) * player.h, player.w, player.h, player.x, player.y)
 
 
 class StateMachine:
@@ -114,6 +110,7 @@ class StateMachine:
 
 class Player:
     images = None
+    animations = ('left_run', 'right_run', 'left_idle', 'right_idle')
 
     def __init__(self, pos_x = SCREEN_W // 2, pos_y = SCREEN_H // 2):
         self.x, self.y = pos_x, pos_y
