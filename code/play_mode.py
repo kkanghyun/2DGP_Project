@@ -25,11 +25,11 @@ def init():
     background = Background()
     game_world.add_object(background, 0)
 
-    player = Player()
+    player = Player(100, 100)
     game_world.add_object(player, 1)
     
-    hurdle = Hurdle()
-    game_world.add_object(hurdle, 1)
+    hurdle = Hurdle(500, 100)
+    game_world.add_object(hurdle, 2)
 
     game_world.add_collision_pair('player:hurdle', player, hurdle)
 

@@ -1,15 +1,16 @@
-from game_utility import load_image, SCREEN_X, SCREEN_Y
+from game_utility import load_image, SCREEN_W, SCREEN_H
 from pico2d import draw_rectangle
 
 
 class Hurdle:
     image = None
 
-    def __init__(self):
-        self.x, self.y = SCREEN_X // 2 + 200, SCREEN_Y // 2
+    def __init__(self, pos_x = SCREEN_W // 2, pos_y = SCREEN_H // 2):
+        self.x, self.y = pos_x, pos_y
         if Hurdle.image == None:
             Hurdle.image = load_image('hurdle.png')
         self.w, self.h = 100, 100
+        self.action = 0
 
 
     def update(self):

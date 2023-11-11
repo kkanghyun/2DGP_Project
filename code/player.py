@@ -2,7 +2,11 @@
 
 import game_engine
 from pico2d import draw_rectangle, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
-from game_utility import load_image, cal_speed_pps, SCREEN_X, SCREEN_Y
+from game_utility import load_image, cal_speed_pps, SCREEN_W, SCREEN_H
+
+
+# value
+player_animations = ('left_run', 'right_run', 'left_idle', 'right_idle')
 
 
 # animation frame velocity
@@ -13,42 +17,19 @@ FRAMES_PER_ACTION = 8
 
 # state event check
 # ( state event type, event value )
-
-def right_down(e):
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_RIGHT
-
-
-def right_up(e):
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_RIGHT
-
-
-def left_down(e):
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_LEFT
-
-
-def left_up(e):
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_LEFT
-
-
-def space_down(e):
-    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_SPACE
-
-
-def time_out(e):
-    return e[0] == 'TIME_OUT'
-
-# time_out = lambda e : e[0] == 'TIME_OUT'
+right_down = lambda e : e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_RIGHT
+right_up = lambda e : e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_RIGHT
+left_down = lambda e : e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_LEFT
+left_up = lambda e : e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_LEFT
+space_down = lambda e : e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_SPACE
+time_out = lambda e : e[0] == 'TIME_OUT'
 
 
 class Idle:
 
     @staticmethod
     def enter(player, e):
-        if player.face_dir == -1:
-            player.action = 2
-        elif player.face_dir == 1:
-            player.action = 3
-        player.dir = 0
+        player.action = player.dir + '_' + 'idle'
         player.frame = 0
         pass
 
@@ -65,7 +46,7 @@ class Idle:
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(int(player.frame) * 100, player.action * 100, player.w, player.h, player.x, player.y)
+        player.images.clip_draw(int(player.frame) * player.w, player_animations.index(player.action) * player.h, player.w, player.h, player.x, player.y)
 
 
 class Run:
@@ -73,9 +54,9 @@ class Run:
     @staticmethod
     def enter(player, e):
         if right_down(e) or left_up(e): # 오른쪽으로 RUN
-            player.dir, player.action, player.face_dir = 1, 1, 1
+            player.dir, player.action = 'right', 'right_run'
         elif left_down(e) or right_up(e): # 왼쪽으로 RUN
-            player.dir, player.action, player.face_dir = -1, 0, -1
+            player.dir, player.action = 'left', 'left_run'
 
   
     @staticmethod
@@ -86,12 +67,16 @@ class Run:
     @staticmethod
     def update(player):
         player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_engine.delta_time) % FRAMES_PER_ACTION
-        player.x += player.dir * player.velocity * game_engine.delta_time
+        match player.dir:
+            case 'left':
+                player.x -= player.velocity * game_engine.delta_time
+            case 'right':
+                player.x += player.velocity * game_engine.delta_time
 
 
     @staticmethod
     def draw(player):
-        player.image.clip_draw(int(player.frame) * 100, player.action * 100, player.w, player.h, player.x, player.y)
+        player.images.clip_draw(int(player.frame) * player.w, player_animations.index(player.action) * player.h, player.w, player.h, player.x, player.y)
 
 
 class StateMachine:
@@ -130,14 +115,14 @@ class StateMachine:
 class Player:
     images = None
 
-    def __init__(self):
-        self.x, self.y = SCREEN_X // 2, SCREEN_Y // 2
+    def __init__(self, pos_x = SCREEN_W // 2, pos_y = SCREEN_H // 2):
+        self.x, self.y = pos_x, pos_y
         self.frame = 0
-        self.action = 3
-        self.face_dir = 1
-        self.dir = 0
+        self.dir = 'right'
+        self.action = 'right_idle'
         self.velocity = cal_speed_pps(20.0)
-        Player.image = load_image('player.png')
+        if Player.images == None:
+            Player.images = load_image('player.png')
         self.w, self.h = 100, 100
         self.state_machine = StateMachine(self)
         self.state_machine.start()

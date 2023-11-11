@@ -1,4 +1,4 @@
-from game_utility import load_image
+from game_utility import load_image, SCREEN_W, SCREEN_H
 
 
 class Background:
@@ -7,9 +7,9 @@ class Background:
 
 
     def draw(self):
-        w = self.image.w
-        h = self.image.h
-        self.image.clip_draw(0, 0, w, h, w, h, w * 2, h * 2)
+        w = SCREEN_W
+        h = SCREEN_H
+        self.image.draw(SCREEN_W // 2, SCREEN_H // 2, w, h)
 
 
     def update(self):
