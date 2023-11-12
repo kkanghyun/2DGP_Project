@@ -14,3 +14,7 @@ class Background:
 
     def update(self):
         pass
+
+
+    def set_image(self, name):
+        self.image = load_image(name)

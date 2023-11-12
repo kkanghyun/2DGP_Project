@@ -1,7 +1,7 @@
 from pico2d import clear_canvas, update_canvas, get_events, get_time
 from game_utility import load_image, SCREEN_W, SCREEN_H
 import game_engine
-import play_mode
+import title_mode
 
 
 def init():
@@ -17,7 +17,7 @@ def init():
 
 def update():
     if get_time() - logo_start_time >= 3.0:
-        game_engine.change_mode(play_mode)
+        game_engine.change_mode(title_mode)
 
 
 def draw():
