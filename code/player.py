@@ -150,6 +150,14 @@ class Player:
 
     def handle_collision(self, group, other):
         pass
+            
+
+    def set_velocity(self, velocity):
+        self.velocity = velocity
+
+
+    def get_velocity(self):
+        return self.velocity
 
 
     def cal_velocity(self):

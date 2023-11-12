@@ -14,6 +14,7 @@ class Hurdle:
             Hurdle.image = load_image('hurdle.png')
         self.w, self.h = 100, 100
         self.action = 'up'
+        self.collision = False
 
 
     def update(self):
@@ -38,6 +39,7 @@ class Hurdle:
 
 
     def handle_collision(self, group, other):
-        if group == 'player:hurdle':
+        if group == 'player:hurdle' and self.collision == False:
             self.action = 'down'
-        pass
+            self.collision = True
+            other.set_velocity(other.get_velocity() / 2)
