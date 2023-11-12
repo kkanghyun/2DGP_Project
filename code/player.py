@@ -2,13 +2,16 @@
 
 import game_engine
 from pico2d import draw_rectangle, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
-from game_utility import load_image, cal_speed_pps, SCREEN_W, SCREEN_H
+from game_utility import load_image, cal_speed_pps, SCREEN_W, SCREEN_H, GRAVITY
 
+FRAMES_PER_ACTION = 8
 
-# animation frame velocity
+# animation frame from time
 TIME_PER_ACTION = 0.5
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
-FRAMES_PER_ACTION = 8
+
+# animation frame from velocity
+VELOCITY_PER_ACTION = 80
 
 
 # state event check
@@ -38,6 +41,7 @@ class Idle:
     @staticmethod
     def update(player):
         player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_engine.delta_time) % FRAMES_PER_ACTION
+        player.cal_pos()
 
 
     @staticmethod
@@ -62,12 +66,10 @@ class Run:
 
     @staticmethod
     def update(player):
-        player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_engine.delta_time) % FRAMES_PER_ACTION
-        match player.dir:
-            case 'left':
-                player.x -= player.velocity * game_engine.delta_time
-            case 'right':
-                player.x += player.velocity * game_engine.delta_time
+        action_per_velocity = player.velocity / VELOCITY_PER_ACTION
+        player.frame = (player.frame + FRAMES_PER_ACTION * action_per_velocity * game_engine.delta_time) % FRAMES_PER_ACTION
+        player.cal_velocity()
+        player.cal_pos()
 
 
     @staticmethod
@@ -117,7 +119,11 @@ class Player:
         self.frame = 0
         self.dir = 'right'
         self.action = 'right_idle'
-        self.velocity = cal_speed_pps(20.0)
+        self.force = 200.0
+        self.mass = 1.0
+        self.accel = self.force / self.mass
+        # self.velocity = cal_speed_pps(self.accel)
+        self.velocity = 0.0
         if Player.images == None:
             Player.images = load_image('player.png')
         self.w, self.h = 100, 100
@@ -144,3 +150,43 @@ class Player:
 
     def handle_collision(self, group, other):
         pass
+
+
+    def cal_velocity(self):
+        match self.dir:
+            case 'right':
+                self.accel = self.force / self.mass
+            case 'left':
+                self.accel = -self.force / self.mass
+
+        self.velocity = self.velocity + self.accel * game_engine.delta_time
+
+
+    def cal_pos(self):
+        normal_force = self.mass * GRAVITY
+
+        friction_coef = 10.0
+
+        friction = friction_coef * normal_force
+
+        friction_dir_x = -self.velocity
+
+        mag = abs(friction_dir_x)
+
+        # 마찰력만큼 속력 감소
+        if mag > 0.0:
+            friction_dir_x = friction_dir_x / mag
+            if self.state_machine.cur_state == Idle:
+                friction_force_x = friction_dir_x * friction * 5
+            else:
+                friction_force_x = friction_dir_x * friction
+
+            friction_accel_x = friction_force_x / self.mass
+
+            velocity = self.velocity + friction_accel_x * game_engine.delta_time
+            if velocity * self.velocity < 0.0:
+                self.velocity = 0.0
+            else:
+                self.velocity = velocity
+
+        self.x = self.x + self.velocity * game_engine.delta_time
