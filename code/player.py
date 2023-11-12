@@ -6,11 +6,11 @@ from game_utility import load_image, cal_speed_pps, SCREEN_W, SCREEN_H, GRAVITY
 
 FRAMES_PER_ACTION = 8
 
-# animation frame from time
+# animation frame per time
 TIME_PER_ACTION = 0.5
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 
-# animation frame from velocity
+# animation frame per velocity
 VELOCITY_PER_ACTION = 80
 
 
@@ -28,9 +28,12 @@ class Idle:
 
     @staticmethod
     def enter(player, e):
-        player.action = player.dir + '_' + 'idle'
-        player.frame = 0
-        pass
+        if player.is_jump == False:
+            player.action = player.dir + '_' + 'idle'
+            player.frame = 0
+        
+        if space_down(e):
+            player.jump_init()
 
 
     @staticmethod
@@ -57,6 +60,8 @@ class Run:
             player.dir, player.action = 'right', 'right_run'
         elif left_down(e) or right_up(e): # 왼쪽으로 RUN
             player.dir, player.action = 'left', 'left_run'
+        elif space_down(e):
+            player.jump_init()
 
   
     @staticmethod
@@ -82,8 +87,8 @@ class StateMachine:
         self.player = player
         self.cur_state = Idle
         self.transitions = {
-            Idle: {right_down: Run, left_down: Run, left_up: Run, right_up: Run},
-            Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle},
+            Idle: {right_down: Run, left_down: Run, left_up: Run, right_up: Run, space_down: Idle},
+            Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, space_down: Run},
         }
 
 
@@ -92,6 +97,8 @@ class StateMachine:
 
 
     def update(self):
+        if self.player.is_jump == True:
+            self.player.jump_update()
         self.cur_state.update(self.player)
 
 
@@ -115,6 +122,7 @@ class Player:
     animations = ('left_run', 'right_run', 'left_idle', 'right_idle')
 
     def __init__(self, pos_x = SCREEN_W // 2, pos_y = SCREEN_H // 2):
+        self.start_x, self.start_y = pos_x, pos_y
         self.x, self.y = pos_x, pos_y
         self.frame = 0
         self.dir = 'right'
@@ -124,6 +132,9 @@ class Player:
         self.accel = self.force / self.mass
         # self.velocity = cal_speed_pps(self.accel)
         self.velocity = 0.0
+        self.is_jump = False
+        self.jump_force = GRAVITY / 4
+        self.jump_velocity = 0.0
         if Player.images == None:
             Player.images = load_image('player.png')
         self.w, self.h = 100, 100
@@ -185,7 +196,7 @@ class Player:
         if mag > 0.0:
             friction_dir_x = friction_dir_x / mag
             if self.state_machine.cur_state == Idle:
-                friction_force_x = friction_dir_x * friction * 5
+                friction_force_x = friction_dir_x * friction * 10
             else:
                 friction_force_x = friction_dir_x * friction
 
@@ -198,3 +209,22 @@ class Player:
                 self.velocity = velocity
 
         self.x = self.x + self.velocity * game_engine.delta_time
+
+
+    def jump_init(self):
+        if self.is_jump == True: return
+
+        self.is_jump = True
+        self.jump_velocity = self.jump_force
+
+
+    def jump_update(self):
+        self.jump_velocity -= GRAVITY * game_engine.delta_time
+        self.y += self.jump_velocity
+        if self.y <= self.start_y:
+            self.y = self.start_y
+            self.is_jump = False
+
+            if self.state_machine.cur_state == Idle:
+                self.action = self.dir + '_' + 'idle'
+                self.frame = 0
