@@ -49,7 +49,11 @@ class Idle:
 
     @staticmethod
     def draw(player):
-        player.images.clip_draw(int(player.frame) * player.w, player.animations.index(player.action) * player.h, player.w, player.h, player.x, player.y)
+        if player.is_jump:
+            action = player.dir + '_run'
+            player.images.clip_draw(1 * player.w, player.animations.index(action) * player.h, player.w, player.h, player.x, player.y)
+        else:
+            player.images.clip_draw(int(player.frame) * player.w, player.animations.index(player.action) * player.h, player.w, player.h, player.x, player.y)
 
 
 class Run:
