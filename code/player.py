@@ -2,7 +2,7 @@
 
 import game_engine
 from pico2d import draw_rectangle, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
-from game_utility import load_image, cal_speed_pps, SCREEN_W, SCREEN_H, GRAVITY
+from game_utility import load_image, load_font, cal_speed_pps, SCREEN_W, SCREEN_H, GRAVITY, FRICTION_COEF
 
 FRAMES_PER_ACTION = 8
 
@@ -79,7 +79,10 @@ class Run:
 
     @staticmethod
     def draw(player):
-        player.images.clip_draw(int(player.frame) * player.w, player.animations.index(player.action) * player.h, player.w, player.h, player.x, player.y)
+        if player.is_jump:
+            player.images.clip_draw(1 * player.w, player.animations.index(player.action) * player.h, player.w, player.h, player.x, player.y)
+        else:
+            player.images.clip_draw(int(player.frame) * player.w, player.animations.index(player.action) * player.h, player.w, player.h, player.x, player.y)
 
 
 class StateMachine:
@@ -119,6 +122,7 @@ class StateMachine:
 
 class Player:
     images = None
+    font = None
     animations = ('left_run', 'right_run', 'left_idle', 'right_idle')
 
     def __init__(self, pos_x = SCREEN_W // 2, pos_y = SCREEN_H // 2):
@@ -127,16 +131,20 @@ class Player:
         self.frame = 0
         self.dir = 'right'
         self.action = 'right_idle'
-        self.force = 200.0
+        self.force = 400.0
         self.mass = 1.0
         self.accel = self.force / self.mass
         # self.velocity = cal_speed_pps(self.accel)
-        self.velocity = 0.0
+        self.velocity = 0.0 # m/s
+        self.velocity_max = 400.0
         self.is_jump = False
         self.jump_force = GRAVITY / 4
         self.jump_velocity = 0.0
         if Player.images == None:
             Player.images = load_image('player.png')
+        if Player.font == None:
+            Player.font = load_font('ENCR10B.TTF', 10)
+            self.font_color = (0, 0, 255)
         self.w, self.h = 100, 100
         self.state_machine = StateMachine(self)
         self.state_machine.start()
@@ -151,6 +159,7 @@ class Player:
 
 
     def draw(self):
+        self.font.draw(self.x-10, self.y + 60, f'{abs(self.velocity // 10)}', self.font_color)
         self.state_machine.draw()
         draw_rectangle(*self.get_bb())
 
@@ -179,14 +188,16 @@ class Player:
                 self.accel = -self.force / self.mass
 
         self.velocity = self.velocity + self.accel * game_engine.delta_time
+        if self.velocity >= self.velocity_max:
+            self.velocity = self.velocity_max
+        elif self.velocity <= -self.velocity_max:
+            self.velocity = -self.velocity_max
 
 
     def cal_pos(self):
         normal_force = self.mass * GRAVITY
 
-        friction_coef = 10.0
-
-        friction = friction_coef * normal_force
+        friction = FRICTION_COEF * normal_force
 
         friction_dir_x = -self.velocity
 
@@ -195,12 +206,16 @@ class Player:
         # 마찰력만큼 속력 감소
         if mag > 0.0:
             friction_dir_x = friction_dir_x / mag
-            if self.state_machine.cur_state == Idle:
-                friction_force_x = friction_dir_x * friction * 10
-            else:
-                friction_force_x = friction_dir_x * friction
-
+            friction_force_x = friction_dir_x * friction
             friction_accel_x = friction_force_x / self.mass
+
+            if self.state_machine.cur_state == Idle:
+                if friction_dir_x >= 0.0:
+                    self.accel = self.force / self.mass
+                else:
+                    self.accel = -self.force / self.mass
+
+                self.velocity = self.velocity + self.accel * game_engine.delta_time
 
             velocity = self.velocity + friction_accel_x * game_engine.delta_time
             if velocity * self.velocity < 0.0:
