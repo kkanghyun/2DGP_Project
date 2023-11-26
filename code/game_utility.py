@@ -4,7 +4,7 @@ from pico2d import load_font as pico2d_load_font
 
 SCREEN_W, SCREEN_H = 1280, 720
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm, canvas 1 block is 10 pixel
-GRAVITY = 9.8 / 2
+GRAVITY = 5.5
 
 FRICTION_COEF = 30.0
 

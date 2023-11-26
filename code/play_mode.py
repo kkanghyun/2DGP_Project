@@ -26,6 +26,8 @@ def init():
     game_world.add_object(background, 0)
 
     player = Player(100, 100 + 10)
+    player.set_scale(50, 50)
+    player.set_font('ENCR10B.TTF', 10)
     game_world.add_object(player, 1)
     
     hurdles = [Hurdle(400 + 200 * i , 100 + 10) for i in range(3)]
