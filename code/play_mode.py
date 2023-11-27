@@ -18,24 +18,7 @@ def handle_events():
 
 
 def init():
-    global background
-    global player
-    global hurdles
-
-    background = Background()
-    game_world.add_object(background, 0)
-
-    player = Player(100, 100 + 10)
-    player.set_scale(50, 50)
-    player.set_font('ENCR10B.TTF', 10)
-    game_world.add_object(player, 1)
-    
-    hurdles = [Hurdle(400 + 200 * i , 100 + 10) for i in range(3)]
-    game_world.add_objects(hurdles, 2)
-
-    game_world.add_collision_pair('player:hurdle', player, None)
-    for hurdle in hurdles:
-        game_world.add_collision_pair('player:hurdle', None, hurdle)
+    create_objects()
 
 
 def finish():
@@ -59,4 +42,44 @@ def pause():
 
 
 def resume():
+    pass
+
+
+def create_objects():
+    create_background()
+    create_hurdles()
+    create_player()
+    create_AI()
+
+
+def create_background():
+    global background
+
+    background = Background()
+    game_world.add_object(background, 0)
+
+
+def create_hurdles():
+    global hurdles
+    
+    hurdles = [Hurdle(400 + 200 * i , 100 + 10) for i in range(3)]
+    game_world.add_objects(hurdles, 2)
+
+    for hurdle in hurdles:
+        game_world.add_collision_pair('player:hurdle', None, hurdle)
+
+
+def create_player():
+    global player
+    
+    player = Player(100, 100 + 10)
+    player.set_font('ENCR10B.TTF', 10)
+    player.set_scale(50, 50)
+    player.set_bb(10, 18, 10, 23)
+    game_world.add_object(player, 1)
+    
+    game_world.add_collision_pair('player:hurdle', player, None)
+
+
+def create_AI():
     pass

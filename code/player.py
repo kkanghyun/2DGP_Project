@@ -153,6 +153,7 @@ class Player:
         self.image_w, self.image_h = 100, 100
         self.state_machine = StateMachine(self)
         self.state_machine.start()
+        self.collision_bb = []
 
 
     def update(self):
@@ -168,10 +169,6 @@ class Player:
         self.state_machine.draw()
         draw_rectangle(*self.get_bb())
 
-        
-    def get_bb(self):
-        return self.x - 21, self.y - 36, self.x + 21, self.y + 46
-
 
     def handle_collision(self, group, other):
         pass
@@ -184,13 +181,26 @@ class Player:
     def set_velocity(self, velocity):
         self.velocity = velocity
 
+        
+    def set_bb(self, left, bottom, right, top):
+        self.collision_bb = {'left' : left, 'bottom' : bottom, 'right' : right, 'top' : top}
+
 
     def set_font(self, name, size):
         Player.font = load_font(name, size)
 
 
+    def get_scale(self):
+        return self.w, self.h
+
+
     def get_velocity(self):
         return self.velocity
+
+        
+    def get_bb(self):
+        return [self.x - self.collision_bb['left'], self.y - self.collision_bb['bottom'], 
+                self.x + self.collision_bb['right'], self.y + self.collision_bb['top']]
 
 
     def cal_velocity(self):
