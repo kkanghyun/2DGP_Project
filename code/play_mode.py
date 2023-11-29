@@ -62,19 +62,21 @@ def create_background():
 def create_hurdles():
     global hurdles
     
-    hurdles = [Hurdle(400 + 200 * i , 100 + 10) for i in range(3)]
+    hurdles = [Hurdle(400 + 200 * i , 80 + 8) for i in range(3)]
     game_world.add_objects(hurdles, 2)
 
     for hurdle in hurdles:
+        hurdle.set_size(104 / 3, 91 / 3)
+        hurdle.set_bb(-6, 31, 16, 0)
         game_world.add_collision_pair('player:hurdle', None, hurdle)
 
 
 def create_player():
     global player
     
-    player = Player(100, 100 + 10)
+    player = Player(100, 80)
     player.set_font('ENCR10B.TTF', 10)
-    player.set_scale(50, 50)
+    player.set_size(50, 50)
     player.set_bb(10, 18, 10, 23)
     game_world.add_object(player, 1)
     

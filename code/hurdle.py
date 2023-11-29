@@ -1,24 +1,31 @@
 from game_utility import load_image, SCREEN_W, SCREEN_H
 from pico2d import draw_rectangle
+
 import math
+import game_engine
+import game_world
 
 
 class Hurdle:
     image = None
-    image_offset_x = 50
-    image_offset_y = 10
 
     def __init__(self, pos_x = SCREEN_W // 2, pos_y = SCREEN_H // 2):
         self.x, self.y = pos_x, pos_y
         if Hurdle.image == None:
             Hurdle.image = load_image('hurdle.png')
-        self.w, self.h = 100, 100
+        self.w, self.h = 50, 50
         self.action = 'up'
-        self.collision = False
+        self.rotate = 0.0
+        self.velocity = 200
+        self.collision_bb = []
 
 
     def update(self):
-        pass
+        if self.action == 'down' and self.rotate < 90:
+            self.rotate += self.velocity * game_engine.delta_time
+            self.x += self.w * game_engine.delta_time
+            if self.rotate > 90:
+                self.rotate = 90.0
 
 
     def handle_event(self, event):
@@ -28,18 +35,27 @@ class Hurdle:
     def draw(self):
         match self.action:
             case 'up':
-                Hurdle.image.draw(self.x, self.y + Hurdle.image_offset_y, self.w, self.h)
+                Hurdle.image.draw_to_origin(self.x, self.y, self.w, self.h)
+                draw_rectangle(*self.get_bb())
             case 'down':
-                Hurdle.image.rotate_draw(math.radians(-90.0), self.x + Hurdle.image_offset_x, self.y, self.w, self.h)
-        draw_rectangle(*self.get_bb())
+                Hurdle.image.rotate_draw(math.radians(-self.rotate), self.x + self.w, self.y + self.h / 2, self.w, self.h)
+
+
+    def set_size(self, w, h):
+        self.w, self.h = w, h
+
+
+    def set_bb(self, left, bottom, right, top):
+        self.collision_bb = {'left' : left, 'bottom' : bottom, 'right' : right, 'top' : top}
 
         
     def get_bb(self):
-        return self.x - Hurdle.image_offset_x + 30, self.y + Hurdle.image_offset_y - 45, self.x + 35, self.y + Hurdle.image_offset_y + 5
+        return [self.x - self.collision_bb['left'] + self.w / 2, self.y - self.collision_bb['bottom'] + self.h, 
+                self.x + self.collision_bb['right'] + self.w / 2, self.y + self.collision_bb['top'] + self.h]
 
 
     def handle_collision(self, group, other):
-        if group == 'player:hurdle' and self.collision == False:
+        if group == 'player:hurdle':
             self.action = 'down'
-            self.collision = True
             other.set_velocity(other.get_velocity() / 2)
+            game_world.remove_collision_object(self)

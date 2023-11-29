@@ -7,7 +7,7 @@ from game_utility import load_image, load_font, cal_speed_pps, SCREEN_W, SCREEN_
 FRAMES_PER_ACTION = 8
 
 # animation frame per time
-TIME_PER_ACTION = 0.5
+TIME_PER_ACTION = 0.6
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 
 # animation frame per velocity
@@ -22,6 +22,8 @@ left_down = lambda e : e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key
 left_up = lambda e : e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_LEFT
 space_down = lambda e : e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_SPACE
 time_out = lambda e : e[0] == 'TIME_OUT'
+
+
 
 
 class Idle:
@@ -51,9 +53,11 @@ class Idle:
     def draw(player):
         if player.is_jump:
             action = player.dir + '_run'
-            player.images.clip_draw(1 * player.image_w, player.animations.index(action) * player.image_h, player.image_w, player.image_h, player.x, player.y, player.w, player.h)
+            player.images.clip_draw_to_origin(1 * player.image_w, player.animations.index(action) * player.image_h, player.image_w, player.image_h, player.x, player.y, player.w, player.h)
         else:
-            player.images.clip_draw(int(player.frame) * player.image_w, player.animations.index(player.action) * player.image_h, player.image_w, player.image_h, player.x, player.y, player.w, player.h)
+            player.images.clip_draw_to_origin(int(player.frame) * player.image_w, player.animations.index(player.action) * player.image_h, player.image_w, player.image_h, player.x, player.y, player.w, player.h)
+
+
 
 
 class Run:
@@ -84,9 +88,11 @@ class Run:
     @staticmethod
     def draw(player):
         if player.is_jump:
-            player.images.clip_draw(1 * player.image_w, player.animations.index(player.action) * player.image_h, player.image_w, player.image_h, player.x, player.y, player.w, player.h)
+            player.images.clip_draw_to_origin(1 * player.image_w, player.animations.index(player.action) * player.image_h, player.image_w, player.image_h, player.x, player.y, player.w, player.h)
         else:
-            player.images.clip_draw(int(player.frame) * player.image_w, player.animations.index(player.action) * player.image_h, player.image_w, player.image_h, player.x, player.y, player.w, player.h)
+            player.images.clip_draw_to_origin(int(player.frame) * player.image_w, player.animations.index(player.action) * player.image_h, player.image_w, player.image_h, player.x, player.y, player.w, player.h)
+
+
 
 
 class StateMachine:
@@ -124,6 +130,8 @@ class StateMachine:
         self.cur_state.draw(self.player)
 
 
+
+
 class Player:
     images = None
     font = None
@@ -150,6 +158,7 @@ class Player:
         if Player.font == None:
             Player.font = load_font('ENCR10B.TTF', 10)
             self.font_color = (0, 0, 255)
+            self.font_x, self.font_y = -10, 30
         self.image_w, self.image_h = 100, 100
         self.state_machine = StateMachine(self)
         self.state_machine.start()
@@ -165,7 +174,7 @@ class Player:
 
 
     def draw(self):
-        self.font.draw(self.x-10, self.y+60, f'{abs(self.velocity // 10)}', self.font_color)
+        self.font.draw(self.x + self.w / 2 + self.font_x, self.y + self.h / 2 + self.font_y, f'{abs(self.velocity / 10):.2f}', self.font_color)
         self.state_machine.draw()
         draw_rectangle(*self.get_bb())
 
@@ -174,7 +183,7 @@ class Player:
         pass
 
 
-    def set_scale(self, w, h):
+    def set_size(self, w, h):
         self.w, self.h = w, h
             
 
@@ -199,8 +208,8 @@ class Player:
 
         
     def get_bb(self):
-        return [self.x - self.collision_bb['left'], self.y - self.collision_bb['bottom'], 
-                self.x + self.collision_bb['right'], self.y + self.collision_bb['top']]
+        return [self.x - self.collision_bb['left'] + self.w / 2, self.y - self.collision_bb['bottom'] + self.h / 2, 
+                self.x + self.collision_bb['right'] + self.w / 2, self.y + self.collision_bb['top'] + self.h / 2]
 
 
     def cal_velocity(self):
