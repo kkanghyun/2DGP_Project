@@ -1,9 +1,11 @@
-import game_engine
-import game_world
 from pico2d import *
 from background import Background
 from player import Player
 from hurdle import Hurdle
+
+import game_engine
+import game_world
+import random
 
 
 def handle_events():
@@ -62,7 +64,17 @@ def create_background():
 def create_hurdles():
     global hurdles
     
-    hurdles = [Hurdle(400 + 200 * i , 80 + 8) for i in range(3)]
+    hurdles = []
+    for i in range(24):
+        if i % 4 == 0 or i % 4 == 1:
+            continue
+        if random.randint(0, 100) <= 30:
+            continue
+
+        hurdle = Hurdle(200 + (104 / 3 + 2) * i, 80 + 8)
+        hurdles.append(hurdle)
+
+        
     game_world.add_objects(hurdles, 2)
 
     for hurdle in hurdles:

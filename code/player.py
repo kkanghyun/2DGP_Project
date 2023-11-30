@@ -144,14 +144,14 @@ class Player:
         self.frame = 0
         self.dir = 'right'
         self.action = 'right_idle'
-        self.force = 200.0
+        self.force = 300.0
         self.mass = 1.0
         self.accel = self.force / self.mass
         # self.velocity = cal_speed_pps(self.accel)
         self.velocity = 0.0 # m/s
         self.velocity_max = 200.0
         self.is_jump = False
-        self.jump_force = GRAVITY / 4
+        self.jump_force = 1.8
         self.jump_velocity = 0.0
         if Player.images == None:
             Player.images = load_image('player.png')

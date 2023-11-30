@@ -5,13 +5,15 @@ import title_mode
 
 
 def init():
-    global image
+    global image_background
+    global image_signature
     global running
     global logo_start_time
 
     running = True
-    image = load_image('tuk_credit.png')
-    image.opacify(0)
+    image_background = load_image('background_white.png')
+    image_signature = load_image('signature.jpg')
+    image_signature.opacify(0)
     logo_start_time = get_time()
 
 
@@ -21,8 +23,12 @@ def update():
 
 
 def draw():
+    global image_background
+    global image_signature
+
     clear_canvas()
-    image.draw(SCREEN_W // 2, SCREEN_H // 2, SCREEN_W, SCREEN_H)
+    image_background.draw(SCREEN_W // 2, SCREEN_H // 2)
+    image_signature.draw(SCREEN_W // 2, SCREEN_H // 2)
     update_canvas()
 
 

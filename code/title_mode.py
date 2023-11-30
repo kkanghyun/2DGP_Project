@@ -9,11 +9,13 @@ def init():
     global background
     global press_start
     global current_time
+    global press_start_enable
 
     background = Background()
     background.set_image('title_back.png')
 
     press_start = load_image('press_start.png')
+    press_start_enable = True
     
     current_time = get_time()
 
@@ -21,12 +23,15 @@ def init():
 def update():
     global current_time
     global press_start
+    global press_start_enable
 
     if get_time() - current_time >= 1.0:
-        if press_start == None:
-            press_start = load_image('press_start.png')
+        if press_start_enable == False:
+            press_start.opacify(1)
+            press_start_enable = True
         else:
-            press_start = None
+            press_start.opacify(0)
+            press_start_enable = False
         
         current_time = get_time()
 
