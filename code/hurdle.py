@@ -9,7 +9,8 @@ import game_world
 class Hurdle:
     image = None
 
-    def __init__(self, pos_x = SCREEN_W // 2, pos_y = SCREEN_H // 2):
+    def __init__(self, id, pos_x = SCREEN_W // 2, pos_y = SCREEN_H // 2):
+        self.id = id
         self.x, self.y = pos_x, pos_y
         if Hurdle.image == None:
             Hurdle.image = load_image('hurdle.png')
@@ -55,7 +56,7 @@ class Hurdle:
 
 
     def handle_collision(self, group, other):
-        if group == 'player:hurdle':
+        if group == 'player:hurdle' and self.id == other.id:
             self.action = 'down'
             other.set_velocity(other.get_velocity() / 2)
             game_world.remove_collision_object(self)

@@ -1,8 +1,9 @@
-# 이것은 각 상태들을 객체로 구현한 것임.
-
-import game_engine
 from pico2d import draw_rectangle, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
 from game_utility import load_image, load_font, cal_speed_pps, SCREEN_W, SCREEN_H, GRAVITY, FRICTION_COEF
+from behavior_tree import BehaviorTree, Action, Sequence, Condition, Selector
+
+import game_engine
+import play_mode
 
 FRAMES_PER_ACTION = 8
 
@@ -12,16 +13,6 @@ ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 
 # animation frame per velocity
 ACTION_PER_VELOCITY = 50
-
-
-# state event check
-# ( state event type, event value )
-right_down = lambda e : e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_RIGHT
-right_up = lambda e : e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_RIGHT
-left_down = lambda e : e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_LEFT
-left_up = lambda e : e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_LEFT
-space_down = lambda e : e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_SPACE
-time_out = lambda e : e[0] == 'TIME_OUT'
 
 
 
@@ -34,8 +25,8 @@ class Idle:
             player.action = player.dir + '_' + 'idle'
             player.frame = 0
         
-        if space_down(e):
-            player.jump_init()
+        # if space_down(e):
+        #     player.jump_init()
 
 
     @staticmethod
@@ -64,12 +55,13 @@ class Run:
 
     @staticmethod
     def enter(player, e):
-        if right_down(e) or left_up(e): # 오른쪽으로 RUN
-            player.dir, player.action = 'right', 'right_run'
-        elif left_down(e) or right_up(e): # 왼쪽으로 RUN
-            player.dir, player.action = 'left', 'left_run'
-        elif space_down(e):
-            player.jump_init()
+        # if right_down(e) or left_up(e): # 오른쪽으로 RUN
+        #     player.dir, player.action = 'right', 'right_run'
+        # elif left_down(e) or right_up(e): # 왼쪽으로 RUN
+        #     player.dir, player.action = 'left', 'left_run'
+        # elif space_down(e):
+        #     player.jump_init()
+        pass
 
   
     @staticmethod
@@ -95,46 +87,52 @@ class Run:
 
 
 
-class StateMachine:
-    def __init__(self, player):
-        self.player = player
-        self.cur_state = Idle
-        self.transitions = {
-            Idle: {right_down: Run, left_down: Run, left_up: Run, right_up: Run, space_down: Idle},
-            Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, space_down: Run},
-        }
+class AI_State:
+
+    @staticmethod
+    def idle(player):
+        if play_mode.game_start == False or player.x >= play_mode.background.w - 100:
+            if player.state != 'idle':
+                if player.is_jump == False:
+                    player.action = player.dir + '_' + 'idle'
+                    player.frame = 0
+                player.state = 'idle'
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.FAIL
 
 
-    def start(self):
-        self.cur_state.enter(self.player, ('NONE', 0))
+    @staticmethod
+    def run(player):
+        if player.state != 'run':
+            player.dir, player.action = 'right', 'right_run'
+            player.state = 'run'
+        player.cal_velocity()
+        player.state = 'run'
+        return BehaviorTree.SUCCESS
 
 
-    def update(self):
-        if self.player.is_jump == True:
-            self.player.jump_update()
-        self.cur_state.update(self.player)
+    @staticmethod
+    def jump(player):
+        player.jump_init()
+        return BehaviorTree.SUCCESS
+    
 
-
-    def handle_event(self, e):
-        for check_event, next_state in self.transitions[self.cur_state].items():
-            if check_event(e):
-                self.cur_state.exit(self.player, e)
-                self.cur_state = next_state
-                self.cur_state.enter(self.player, e)
-                return True
-
-        return False
-
-
-    def draw(self):
-        self.cur_state.draw(self.player)
+    @staticmethod
+    def is_hurdles_nearby(player):
+        for hurdle in play_mode.hurdles_list[player.id]:
+            if hurdle.x < player.x:
+                continue
+            else:
+                if hurdle.x - player.x < 60:
+                    return BehaviorTree.SUCCESS
+                else:
+                    return BehaviorTree.FAIL
 
 
 
 
-class Player:
-    images = None
-    font = None
+class Player_AI:
     animations = ('left_run', 'right_run', 'left_idle', 'right_idle')
 
     def __init__(self, id, pos_x = SCREEN_W // 2, pos_y = SCREEN_H // 2):
@@ -154,30 +152,33 @@ class Player:
         self.is_jump = False
         self.jump_force = 2.0
         self.jump_velocity = 0.0
-        if Player.images == None:
-            Player.images = load_image('player.png')
-        if Player.font == None:
-            Player.font = load_font('ENCR10B.TTF', 10)
-            self.font_color = (0, 0, 255)
-            self.font_x, self.font_y = -10, 30
+        self.images = load_image('player.png')
+        self.font = load_font('ENCR10B.TTF', 10)
+        self.font_color = (0, 0, 255)
+        self.font_x, self.font_y = -10, 30
         self.image_w, self.image_h = 100, 100
-        self.state_machine = StateMachine(self)
-        self.state_machine.start()
         self.collision_bb = []
+
+        self.state = 'idle'
+        self.build_behavior_tree()
 
 
     def update(self):
-        self.state_machine.update()
-
-
-    def handle_event(self, event):
-        self.state_machine.handle_event(('INPUT', event))
+        if self.is_jump == True:
+            self.jump_update()
+        self.cal_pos()
+        self.frame_update()
+        self.bt.run()
 
 
     def draw(self):
         self.font.draw(self.x + self.w / 2 + self.font_x, self.y + self.h / 2 + self.font_y, f'{abs(self.velocity / 20):.2f}', self.font_color)
-        self.state_machine.draw()
+        self.draw_player()
         draw_rectangle(*self.get_bb())
+
+
+    def handle_event(self, event):
+        pass
 
 
     def handle_collision(self, group, other):
@@ -197,7 +198,7 @@ class Player:
 
 
     def set_font(self, name, size):
-        Player.font = load_font(name, size)
+        self.font = load_font(name, size)
 
 
     def get_scale(self):
@@ -242,7 +243,7 @@ class Player:
             friction_force_x = friction_dir_x * friction
             friction_accel_x = friction_force_x / self.mass
 
-            if self.state_machine.cur_state == Idle:
+            if self.state == 'idle':
                 if friction_dir_x >= 0.0:
                     self.accel = self.force / self.mass
                 else:
@@ -273,6 +274,47 @@ class Player:
             self.y = self.start_y
             self.is_jump = False
 
-            if self.state_machine.cur_state == Idle:
+            if self.state == 'idle':
                 self.action = self.dir + '_' + 'idle'
                 self.frame = 0
+
+
+    def frame_update(self):
+        match self.state:
+            case 'idle':
+                self.frame = (self.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_engine.delta_time) % FRAMES_PER_ACTION
+            case 'run':
+                action_per_velocity = self.velocity / ACTION_PER_VELOCITY
+                self.frame = (self.frame + FRAMES_PER_ACTION * action_per_velocity * game_engine.delta_time) % FRAMES_PER_ACTION
+
+                
+    def draw_player(self):
+        match self.state:
+            case 'idle':
+                if self.is_jump:
+                    action = self.dir + '_run'
+                    self.images.clip_draw_to_origin(1 * self.image_w, self.animations.index(action) * self.image_h, self.image_w, self.image_h, self.x, self.y, self.w, self.h)
+                else:
+                    self.images.clip_draw_to_origin(int(self.frame) * self.image_w, self.animations.index(self.action) * self.image_h, self.image_w, self.image_h, self.x, self.y, self.w, self.h)
+            case 'run':
+                if self.is_jump:
+                    self.images.clip_draw_to_origin(1 * self.image_w, self.animations.index(self.action) * self.image_h, self.image_w, self.image_h, self.x, self.y, self.w, self.h)
+                else:
+                    self.images.clip_draw_to_origin(int(self.frame) * self.image_w, self.animations.index(self.action) * self.image_h, self.image_w, self.image_h, self.x, self.y, self.w, self.h)
+
+
+    def build_behavior_tree(self):
+        a1 = Action('Idle', AI_State.idle, self)
+        a2 = Action('Run', AI_State.run, self)
+        a3 = Action('Jump', AI_State.jump, self)
+        c1 = Condition('Are there any hurdles ahead?', AI_State.is_hurdles_nearby, self)
+
+        SEQ_Jump = Sequence('Jump', c1, a3, a2)
+        SEL_Jump_or_Run = Selector('Jump or Run', SEQ_Jump, a2)
+
+        SEQ_Idle = Sequence('Idle', a1)
+        SEQ_Run = Sequence('Run', SEL_Jump_or_Run)
+
+        root = SEL_Idle_or_Run = Selector('Idle or Run', SEQ_Idle, SEQ_Run)
+
+        self.bt = BehaviorTree(root)
