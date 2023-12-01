@@ -16,7 +16,7 @@ class Hurdle:
         self.w, self.h = 50, 50
         self.action = 'up'
         self.rotate = 0.0
-        self.velocity = 200
+        self.velocity = 500
         self.collision_bb = []
 
 

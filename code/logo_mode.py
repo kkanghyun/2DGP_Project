@@ -1,34 +1,59 @@
 from pico2d import clear_canvas, update_canvas, get_events, get_time
 from game_utility import load_image, SCREEN_W, SCREEN_H
+from background import Background
+
 import game_engine
 import title_mode
 
 
 def init():
-    global image_background
-    global image_signature
+    global background
+    global signature
     global running
-    global logo_start_time
+    global current_time
+    global opacify_value
 
     running = True
-    image_background = load_image('background_white.png')
-    image_signature = load_image('signature.jpg')
-    image_signature.opacify(0)
-    logo_start_time = get_time()
+    background = Background()
+    background.set_image('background_white.png')
+    signature = load_image('signature.png')
+    opacify_value = 0.0
+    signature.opacify(opacify_value)
+
+    current_time = get_time()
 
 
 def update():
-    if get_time() - logo_start_time >= 3.0:
+    global signature
+    global current_time
+    global opacify_value
+    
+    t = get_time() - current_time
+    if t >= 10.0:
         game_engine.change_mode(title_mode)
+        return
+
+    if t > 1.0:
+        if t > 4.0:
+            if t > 6.0:
+                opacify_value -= (1.0 / 3) * game_engine.delta_time
+                if opacify_value <= 0.0:
+                    opacify_value = 0.0
+        else:
+            opacify_value += (1.0 / 3) * game_engine.delta_time
+            if opacify_value >= 1.0:
+                opacify_value = 1.0
+        
+        signature.opacify(opacify_value)
 
 
 def draw():
-    global image_background
-    global image_signature
+    global background
+    global signature
 
     clear_canvas()
-    image_background.draw(SCREEN_W // 2, SCREEN_H // 2)
-    image_signature.draw(SCREEN_W // 2, SCREEN_H // 2)
+    background.draw()
+    signature.draw(SCREEN_W // 2, SCREEN_H // 2)
     update_canvas()
 
 

@@ -7,8 +7,8 @@ from background import Background
 
 def init():
     global background
-    global press_start
     global current_time
+    global press_start
     global press_start_enable
 
     background = Background()

@@ -174,7 +174,7 @@ class Player:
 
 
     def draw(self):
-        self.font.draw(self.x + self.w / 2 + self.font_x, self.y + self.h / 2 + self.font_y, f'{abs(self.velocity / 10):.2f}', self.font_color)
+        self.font.draw(self.x + self.w / 2 + self.font_x, self.y + self.h / 2 + self.font_y, f'{abs(self.velocity / 20):.2f}', self.font_color)
         self.state_machine.draw()
         draw_rectangle(*self.get_bb())
 
