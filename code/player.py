@@ -1,8 +1,7 @@
-# 이것은 각 상태들을 객체로 구현한 것임.
-
-import game_engine
 from pico2d import draw_rectangle, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
 from game_utility import load_image, load_font, cal_speed_pps, SCREEN_W, SCREEN_H, GRAVITY, FRICTION_COEF
+
+import game_engine
 
 FRAMES_PER_ACTION = 8
 
@@ -148,7 +147,6 @@ class Player:
         self.force = 400.0
         self.mass = 1.0
         self.accel = self.force / self.mass
-        # self.velocity = cal_speed_pps(self.accel)
         self.velocity = 0.0 # m/s
         self.velocity_max = 200.0
         self.is_jump = False

@@ -121,6 +121,7 @@ def create_AI():
     player_AI_list = []
 
     player = Player_AI(0, 100, 150)
+    player.set_images('player_AI_1.png')
     player.set_font('ENCR10B.TTF', 10)
     player.set_size(50, 50)
     player.set_bb(10, 18, 10, 23)
@@ -131,6 +132,7 @@ def create_AI():
     
 
     player = Player_AI(2, 100, 10)
+    player.set_images('player_AI_2.png')
     player.set_font('ENCR10B.TTF', 10)
     player.set_size(50, 50)
     player.set_bb(10, 18, 10, 23)

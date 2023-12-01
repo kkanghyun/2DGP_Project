@@ -1,8 +1,9 @@
 from pico2d import clear_canvas, update_canvas, get_events, get_time, SDL_QUIT, SDL_KEYDOWN, SDLK_ESCAPE, SDLK_RETURN, SDLK_SPACE
 from game_utility import load_image, SCREEN_W, SCREEN_H
+from background import Background
+
 import game_engine
 import play_mode
-from background import Background
 
 
 def init():

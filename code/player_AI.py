@@ -17,76 +17,6 @@ ACTION_PER_VELOCITY = 50
 
 
 
-class Idle:
-
-    @staticmethod
-    def enter(player, e):
-        if player.is_jump == False:
-            player.action = player.dir + '_' + 'idle'
-            player.frame = 0
-        
-        # if space_down(e):
-        #     player.jump_init()
-
-
-    @staticmethod
-    def exit(player, e):
-        pass
-
-
-    @staticmethod
-    def update(player):
-        player.frame = (player.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_engine.delta_time) % FRAMES_PER_ACTION
-        player.cal_pos()
-
-
-    @staticmethod
-    def draw(player):
-        if player.is_jump:
-            action = player.dir + '_run'
-            player.images.clip_draw_to_origin(1 * player.image_w, player.animations.index(action) * player.image_h, player.image_w, player.image_h, player.x, player.y, player.w, player.h)
-        else:
-            player.images.clip_draw_to_origin(int(player.frame) * player.image_w, player.animations.index(player.action) * player.image_h, player.image_w, player.image_h, player.x, player.y, player.w, player.h)
-
-
-
-
-class Run:
-
-    @staticmethod
-    def enter(player, e):
-        # if right_down(e) or left_up(e): # 오른쪽으로 RUN
-        #     player.dir, player.action = 'right', 'right_run'
-        # elif left_down(e) or right_up(e): # 왼쪽으로 RUN
-        #     player.dir, player.action = 'left', 'left_run'
-        # elif space_down(e):
-        #     player.jump_init()
-        pass
-
-  
-    @staticmethod
-    def exit(player, e):
-        pass
-
-
-    @staticmethod
-    def update(player):
-        action_per_velocity = player.velocity / ACTION_PER_VELOCITY
-        player.frame = (player.frame + FRAMES_PER_ACTION * action_per_velocity * game_engine.delta_time) % FRAMES_PER_ACTION
-        player.cal_velocity()
-        player.cal_pos()
-
-
-    @staticmethod
-    def draw(player):
-        if player.is_jump:
-            player.images.clip_draw_to_origin(1 * player.image_w, player.animations.index(player.action) * player.image_h, player.image_w, player.image_h, player.x, player.y, player.w, player.h)
-        else:
-            player.images.clip_draw_to_origin(int(player.frame) * player.image_w, player.animations.index(player.action) * player.image_h, player.image_w, player.image_h, player.x, player.y, player.w, player.h)
-
-
-
-
 class AI_State:
 
     @staticmethod
@@ -128,6 +58,8 @@ class AI_State:
                     return BehaviorTree.SUCCESS
                 else:
                     return BehaviorTree.FAIL
+        
+        return BehaviorTree.FAIL
 
 
 
@@ -146,7 +78,6 @@ class Player_AI:
         self.force = 400.0
         self.mass = 1.0
         self.accel = self.force / self.mass
-        # self.velocity = cal_speed_pps(self.accel)
         self.velocity = 0.0 # m/s
         self.velocity_max = 200.0
         self.is_jump = False
@@ -195,6 +126,10 @@ class Player_AI:
         
     def set_bb(self, left, bottom, right, top):
         self.collision_bb = {'left' : left, 'bottom' : bottom, 'right' : right, 'top' : top}
+
+
+    def set_images(self, name):
+        self.images = load_image(name)
 
 
     def set_font(self, name, size):
@@ -309,8 +244,8 @@ class Player_AI:
         a3 = Action('Jump', AI_State.jump, self)
         c1 = Condition('Are there any hurdles ahead?', AI_State.is_hurdles_nearby, self)
 
-        SEQ_Jump = Sequence('Jump', c1, a3, a2)
-        SEL_Jump_or_Run = Selector('Jump or Run', SEQ_Jump, a2)
+        SEQ_Jump_and_Run = Sequence('Jump', c1, a3, a2)
+        SEL_Jump_or_Run = Selector('Jump or Run', SEQ_Jump_and_Run, a2)
 
         SEQ_Idle = Sequence('Idle', a1)
         SEQ_Run = Sequence('Run', SEL_Jump_or_Run)
