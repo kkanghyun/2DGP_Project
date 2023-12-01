@@ -1,9 +1,10 @@
-from game_utility import load_image, SCREEN_W, SCREEN_H
+from game_utility import load_image, SCREEN_W, SCREEN_H, CAMERA_SCALE
 from pico2d import draw_rectangle
 
 import math
 import game_engine
 import game_world
+import play_mode
 
 
 class Hurdle:
@@ -34,12 +35,16 @@ class Hurdle:
 
 
     def draw(self):
+        sx = self.x * CAMERA_SCALE - play_mode.background.window_left
+        sy = self.y * CAMERA_SCALE - play_mode.background.window_bottom
+        sw = self.w * CAMERA_SCALE
+        sh = self.h * CAMERA_SCALE
         match self.action:
             case 'up':
-                Hurdle.image.draw_to_origin(self.x, self.y, self.w, self.h)
+                Hurdle.image.draw_to_origin(sx, sy, sw, sh)
                 draw_rectangle(*self.get_bb())
             case 'down':
-                Hurdle.image.rotate_draw(math.radians(-self.rotate), self.x + self.w, self.y + self.h / 2, self.w, self.h)
+                Hurdle.image.rotate_draw(math.radians(-self.rotate), sx + sw, sy + sh / 2, sw, sh)
 
 
     def set_size(self, w, h):
@@ -51,8 +56,12 @@ class Hurdle:
 
         
     def get_bb(self):
-        return [self.x - self.collision_bb['left'] + self.w / 2, self.y - self.collision_bb['bottom'] + self.h, 
-                self.x + self.collision_bb['right'] + self.w / 2, self.y + self.collision_bb['top'] + self.h]
+        sx = self.x * CAMERA_SCALE - play_mode.background.window_left
+        sy = self.y * CAMERA_SCALE - play_mode.background.window_bottom
+        sw = self.w * CAMERA_SCALE
+        sh = self.h * CAMERA_SCALE
+        return [sx - self.collision_bb['left'] * CAMERA_SCALE + sw / 2, sy - self.collision_bb['bottom'] * CAMERA_SCALE + sh, 
+                sx + self.collision_bb['right'] * CAMERA_SCALE + sw / 2, sy + self.collision_bb['top'] * CAMERA_SCALE + sh]
 
 
     def handle_collision(self, group, other):

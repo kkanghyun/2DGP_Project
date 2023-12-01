@@ -1,5 +1,5 @@
 from pico2d import clear_canvas, update_canvas, get_events, get_time, SDL_QUIT, SDL_KEYDOWN, SDLK_ESCAPE
-from background import Background
+from background import FixedBackground
 from player import Player
 from player_AI import Player_AI
 from hurdle import Hurdle
@@ -71,7 +71,7 @@ def create_objects():
 def create_background():
     global background
 
-    background = Background()
+    background = FixedBackground()
     game_world.add_object(background, 0)
 
 

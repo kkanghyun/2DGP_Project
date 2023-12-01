@@ -1,7 +1,8 @@
-from pico2d import draw_rectangle, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
-from game_utility import load_image, load_font, cal_speed_pps, SCREEN_W, SCREEN_H, GRAVITY, FRICTION_COEF
+from pico2d import draw_rectangle, clamp, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
+from game_utility import load_image, load_font, cal_speed_pps, SCREEN_W, SCREEN_H, CAMERA_SCALE, GRAVITY, FRICTION_COEF
 
 import game_engine
+import play_mode
 
 FRAMES_PER_ACTION = 8
 
@@ -48,15 +49,6 @@ class Idle:
         player.cal_pos()
 
 
-    @staticmethod
-    def draw(player):
-        if player.is_jump:
-            action = player.dir + '_run'
-            player.images.clip_draw_to_origin(1 * player.image_w, player.animations.index(action) * player.image_h, player.image_w, player.image_h, player.x, player.y, player.w, player.h)
-        else:
-            player.images.clip_draw_to_origin(int(player.frame) * player.image_w, player.animations.index(player.action) * player.image_h, player.image_w, player.image_h, player.x, player.y, player.w, player.h)
-
-
 
 
 class Run:
@@ -82,14 +74,6 @@ class Run:
         player.frame = (player.frame + FRAMES_PER_ACTION * action_per_velocity * game_engine.delta_time) % FRAMES_PER_ACTION
         player.cal_velocity()
         player.cal_pos()
-
-
-    @staticmethod
-    def draw(player):
-        if player.is_jump:
-            player.images.clip_draw_to_origin(1 * player.image_w, player.animations.index(player.action) * player.image_h, player.image_w, player.image_h, player.x, player.y, player.w, player.h)
-        else:
-            player.images.clip_draw_to_origin(int(player.frame) * player.image_w, player.animations.index(player.action) * player.image_h, player.image_w, player.image_h, player.x, player.y, player.w, player.h)
 
 
 
@@ -125,10 +109,6 @@ class StateMachine:
         return False
 
 
-    def draw(self):
-        self.cur_state.draw(self.player)
-
-
 
 
 class Player:
@@ -155,7 +135,7 @@ class Player:
         if Player.images == None:
             Player.images = load_image('player.png')
         if Player.font == None:
-            Player.font = load_font('ENCR10B.TTF', 10)
+            Player.font = load_font('ENCR10B.TTF', 10 * CAMERA_SCALE)
             self.font_color = (0, 0, 255)
             self.font_x, self.font_y = -10, 30
         self.image_w, self.image_h = 100, 100
@@ -166,6 +146,8 @@ class Player:
 
     def update(self):
         self.state_machine.update()
+        self.x = clamp(50.0, self.x, play_mode.background.w // CAMERA_SCALE - 50.0)
+        self.y = clamp(50.0, self.y, play_mode.background.h // CAMERA_SCALE - 50.0)
 
 
     def handle_event(self, event):
@@ -173,8 +155,16 @@ class Player:
 
 
     def draw(self):
-        self.font.draw(self.x + self.w / 2 + self.font_x, self.y + self.h / 2 + self.font_y, f'{abs(self.velocity / 20):.2f}', self.font_color)
-        self.state_machine.draw()
+        sx = self.x * CAMERA_SCALE - play_mode.background.window_left
+        sy = self.y * CAMERA_SCALE - play_mode.background.window_bottom
+        sw = self.w * CAMERA_SCALE
+        sh = self.h * CAMERA_SCALE
+
+        self.font.draw(sx + sw / 2 + self.font_x * CAMERA_SCALE, sy + sh / 2 + self.font_y * CAMERA_SCALE, f'{abs(self.velocity / 20):.2f}', self.font_color)
+        if self.is_jump:
+            self.images.clip_draw_to_origin(1 * self.image_w, self.animations.index(self.action) * self.image_h, self.image_w, self.image_h, sx, sy, sw, sh)
+        else:
+            self.images.clip_draw_to_origin(int(self.frame) * self.image_w, self.animations.index(self.action) * self.image_h, self.image_w, self.image_h, sx, sy, sw, sh)
         draw_rectangle(*self.get_bb())
 
 
@@ -195,7 +185,7 @@ class Player:
 
 
     def set_font(self, name, size):
-        Player.font = load_font(name, size)
+        Player.font = load_font(name, size * CAMERA_SCALE)
 
 
     def get_scale(self):
@@ -207,8 +197,13 @@ class Player:
 
         
     def get_bb(self):
-        return [self.x - self.collision_bb['left'] + self.w / 2, self.y - self.collision_bb['bottom'] + self.h / 2, 
-                self.x + self.collision_bb['right'] + self.w / 2, self.y + self.collision_bb['top'] + self.h / 2]
+        sx = self.x * CAMERA_SCALE - play_mode.background.window_left
+        sy = self.y * CAMERA_SCALE - play_mode.background.window_bottom
+        sw = self.w * CAMERA_SCALE
+        sh = self.h * CAMERA_SCALE
+
+        return [sx - self.collision_bb['left'] * CAMERA_SCALE + sw / 2, sy - self.collision_bb['bottom'] * CAMERA_SCALE + sh / 2, 
+                sx + self.collision_bb['right'] * CAMERA_SCALE + sw / 2, sy + self.collision_bb['top'] * CAMERA_SCALE + sh / 2]
 
 
     def cal_velocity(self):

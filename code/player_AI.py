@@ -1,5 +1,5 @@
 from pico2d import draw_rectangle, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
-from game_utility import load_image, load_font, cal_speed_pps, SCREEN_W, SCREEN_H, GRAVITY, FRICTION_COEF
+from game_utility import load_image, load_font, cal_speed_pps, SCREEN_W, SCREEN_H, CAMERA_SCALE, GRAVITY, FRICTION_COEF
 from behavior_tree import BehaviorTree, Action, Sequence, Condition, Selector
 
 import game_engine
@@ -21,7 +21,7 @@ class AI_State:
 
     @staticmethod
     def idle(player):
-        if play_mode.game_start == False or player.x >= play_mode.background.w - 100:
+        if play_mode.game_start == False or player.x >= play_mode.background.cw - 100:
             if player.state != 'idle':
                 if player.is_jump == False:
                     player.action = player.dir + '_' + 'idle'
@@ -84,7 +84,7 @@ class Player_AI:
         self.jump_force = 2.0
         self.jump_velocity = 0.0
         self.images = load_image('player.png')
-        self.font = load_font('ENCR10B.TTF', 10)
+        self.font = load_font('ENCR10B.TTF', 10 * CAMERA_SCALE)
         self.font_color = (0, 0, 255)
         self.font_x, self.font_y = -10, 30
         self.image_w, self.image_h = 100, 100
@@ -103,7 +103,12 @@ class Player_AI:
 
 
     def draw(self):
-        self.font.draw(self.x + self.w / 2 + self.font_x, self.y + self.h / 2 + self.font_y, f'{abs(self.velocity / 20):.2f}', self.font_color)
+        sx = self.x * CAMERA_SCALE - play_mode.background.window_left
+        sy = self.y * CAMERA_SCALE - play_mode.background.window_bottom
+        sw = self.w * CAMERA_SCALE
+        sh = self.h * CAMERA_SCALE
+
+        self.font.draw(sx + sw / 2 + self.font_x * CAMERA_SCALE, sy + sh / 2 + self.font_y * CAMERA_SCALE, f'{abs(self.velocity / 20):.2f}', self.font_color)
         self.draw_player()
         draw_rectangle(*self.get_bb())
 
@@ -133,7 +138,7 @@ class Player_AI:
 
 
     def set_font(self, name, size):
-        self.font = load_font(name, size)
+        self.font = load_font(name, size * CAMERA_SCALE)
 
 
     def get_scale(self):
@@ -145,8 +150,13 @@ class Player_AI:
 
         
     def get_bb(self):
-        return [self.x - self.collision_bb['left'] + self.w / 2, self.y - self.collision_bb['bottom'] + self.h / 2, 
-                self.x + self.collision_bb['right'] + self.w / 2, self.y + self.collision_bb['top'] + self.h / 2]
+        sx = self.x * CAMERA_SCALE - play_mode.background.window_left
+        sy = self.y * CAMERA_SCALE - play_mode.background.window_bottom
+        sw = self.w * CAMERA_SCALE
+        sh = self.h * CAMERA_SCALE
+
+        return [sx - self.collision_bb['left'] * CAMERA_SCALE + sw / 2, sy - self.collision_bb['bottom'] * CAMERA_SCALE + sh / 2, 
+                sx + self.collision_bb['right'] * CAMERA_SCALE + sw / 2, sy + self.collision_bb['top'] * CAMERA_SCALE + sh / 2]
 
 
     def cal_velocity(self):
@@ -224,19 +234,16 @@ class Player_AI:
 
                 
     def draw_player(self):
-        match self.state:
-            case 'idle':
-                if self.is_jump:
-                    action = self.dir + '_run'
-                    self.images.clip_draw_to_origin(1 * self.image_w, self.animations.index(action) * self.image_h, self.image_w, self.image_h, self.x, self.y, self.w, self.h)
-                else:
-                    self.images.clip_draw_to_origin(int(self.frame) * self.image_w, self.animations.index(self.action) * self.image_h, self.image_w, self.image_h, self.x, self.y, self.w, self.h)
-            case 'run':
-                if self.is_jump:
-                    self.images.clip_draw_to_origin(1 * self.image_w, self.animations.index(self.action) * self.image_h, self.image_w, self.image_h, self.x, self.y, self.w, self.h)
-                else:
-                    self.images.clip_draw_to_origin(int(self.frame) * self.image_w, self.animations.index(self.action) * self.image_h, self.image_w, self.image_h, self.x, self.y, self.w, self.h)
+        sx = self.x * CAMERA_SCALE - play_mode.background.window_left
+        sy = self.y * CAMERA_SCALE - play_mode.background.window_bottom
+        sw = self.w * CAMERA_SCALE
+        sh = self.h * CAMERA_SCALE
 
+        if self.is_jump:
+            self.images.clip_draw_to_origin(1 * self.image_w, self.animations.index(self.action) * self.image_h, self.image_w, self.image_h, sx, sy, sw, sh)
+        else:
+            self.images.clip_draw_to_origin(int(self.frame) * self.image_w, self.animations.index(self.action) * self.image_h, self.image_w, self.image_h, sx, sy, sw, sh)
+            
 
     def build_behavior_tree(self):
         a1 = Action('Idle', AI_State.idle, self)
