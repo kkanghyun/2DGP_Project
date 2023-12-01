@@ -1,5 +1,5 @@
 from pico2d import get_canvas_width, get_canvas_height, clamp
-from game_utility import load_image, SCREEN_W, SCREEN_H, CAMERA_SCALE
+from game_utility import load_image, SCREEN_W, SCREEN_H
 
 import play_mode
 
@@ -36,16 +36,19 @@ class FixedBackground:
         self.ch = get_canvas_height()
         self.w = self.image.w
         self.h = self.image.h
-        # fill here
 
 
     def draw(self):
-        self.image.clip_draw_to_origin(self.window_left, self.window_bottom, self.w, self.h, 0, 0, self.cw, self.ch)
+        l = int(self.window_left + self.window_left / play_mode.camera_scale * (play_mode.camera_scale - 1))
+        b = int(self.window_bottom + self.window_bottom / play_mode.camera_scale * (play_mode.camera_scale - 1))
+        w = int(self.w / play_mode.camera_scale)
+        h = int(self.h / play_mode.camera_scale)
+        self.image.clip_draw_to_origin(l, b, w, h, 0, 0, self.cw, self.ch)
 
 
     def update(self):
-        self.window_left = clamp(0, int(play_mode.player.x) - self.cw // 2, self.w - self.cw - 1)
-        self.window_bottom = clamp(0, int(play_mode.player.y) - self.ch // 2, self.h - self.ch - 1)
+        self.window_left = clamp(0, int((play_mode.player.x - play_mode.player.w / 2) * play_mode.camera_scale) - self.cw // 2, self.cw * play_mode.camera_scale - self.cw - 1)
+        self.window_bottom = clamp(0, int((play_mode.player.y - play_mode.player.h / 2) * play_mode.camera_scale) - self.ch // 2, self.ch * play_mode.camera_scale - self.ch - 1)
 
 
     def handle_event(self, event):

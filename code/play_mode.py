@@ -7,6 +7,7 @@ from hurdle import Hurdle
 import game_engine
 import game_world
 import random
+import game_utility
 
 
 def handle_events():
@@ -23,8 +24,10 @@ def handle_events():
 def init():
     global game_start
     global current_time
+    global camera_scale
 
     game_start = False
+    camera_scale = 1.0
 
     create_objects()
 
@@ -39,9 +42,15 @@ def finish():
 def update():
     global game_start
     global current_time
+    global camera_scale
 
-    if get_time() - current_time >= 3:
-        game_start = True
+    if get_time() - current_time >= 1:
+        if get_time() - current_time >= 5:
+            game_start = True
+        else:
+            camera_scale += 2.0 * game_engine.delta_time
+            if camera_scale >= 3.0:
+                camera_scale = 3.0
 
     game_world.update()
     game_world.handle_collisions()
