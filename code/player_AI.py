@@ -1,6 +1,7 @@
 from pico2d import draw_rectangle, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
 from game_utility import load_image, load_font, cal_speed_pps, SCREEN_W, SCREEN_H, GRAVITY, FRICTION_COEF
 from behavior_tree import BehaviorTree, Action, Sequence, Condition, Selector
+from background import Background
 
 import game_engine
 import play_mode
@@ -69,19 +70,21 @@ class Player_AI:
 
     def __init__(self, id, pos_x = SCREEN_W // 2, pos_y = SCREEN_H // 2):
         self.id = id
+        self.goal = False
+        self.record = 0.0
         self.start_x, self.start_y = pos_x, pos_y
         self.x, self.y = pos_x, pos_y
         self.w, self.h = 100, 100
         self.frame = 0
         self.dir = 'right'
         self.action = 'right_idle'
-        self.force = 400.0
+        self.force = 350.0
         self.mass = 1.0
         self.accel = self.force / self.mass
-        self.velocity = 0.0 # m/s
+        self.velocity = 0.0 # km/s
         self.velocity_max = 200.0
         self.is_jump = False
-        self.jump_force = 2.0
+        self.jump_force = 1.4
         self.jump_velocity = 0.0
         self.images = load_image('player.png')
         self.font = load_font('ENCR10B.TTF', 10 * play_mode.camera_scale)
@@ -95,6 +98,10 @@ class Player_AI:
 
 
     def update(self):
+        if self.x >= SCREEN_W - Background.goal_line:
+            if self.record <= 1.0:
+                self.goal = True
+                self.record = play_mode.real_time
         if self.is_jump == True:
             self.jump_update()
         self.cal_pos()
@@ -108,7 +115,7 @@ class Player_AI:
         sw = self.w * play_mode.camera_scale
         sh = self.h * play_mode.camera_scale
 
-        self.font.draw(sx + sw / 2 + self.font_x * play_mode.camera_scale, sy + sh / 2 + self.font_y * play_mode.camera_scale, f'{abs(self.velocity / 20):.2f}', self.font_color)
+        self.font.draw(sx + sw / 2 + self.font_x * play_mode.camera_scale, sy + sh / 2 + self.font_y * play_mode.camera_scale, f'{abs(self.velocity / 10):.2f}km/s', self.font_color)
         self.draw_player()
         draw_rectangle(*self.get_bb())
 

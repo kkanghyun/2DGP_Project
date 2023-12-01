@@ -5,6 +5,8 @@ import play_mode
 
 
 class Background:
+    goal_line = 190
+
     def __init__(self):
         self.image = load_image('background.jpg')
         self.w = SCREEN_W

@@ -1,5 +1,6 @@
 from pico2d import draw_rectangle, clamp, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
 from game_utility import load_image, load_font, cal_speed_pps, SCREEN_W, SCREEN_H, GRAVITY, FRICTION_COEF
+from background import Background
 
 import game_engine
 import play_mode
@@ -113,31 +114,31 @@ class StateMachine:
 
 class Player:
     images = None
-    font = None
     animations = ('left_run', 'right_run', 'left_idle', 'right_idle')
 
     def __init__(self, id, pos_x = SCREEN_W // 2, pos_y = SCREEN_H // 2):
         self.id = id
+        self.goal = False
+        self.record = 0.0
         self.start_x, self.start_y = pos_x, pos_y
         self.x, self.y = pos_x, pos_y
         self.w, self.h = 100, 100
         self.frame = 0
         self.dir = 'right'
         self.action = 'right_idle'
-        self.force = 400.0
+        self.force = 350.0
         self.mass = 1.0
         self.accel = self.force / self.mass
         self.velocity = 0.0 # m/s
         self.velocity_max = 200.0
         self.is_jump = False
-        self.jump_force = 2.0
+        self.jump_force = 1.4
         self.jump_velocity = 0.0
         if Player.images == None:
             Player.images = load_image('player.png')
-        if Player.font == None:
-            Player.font = load_font('ENCR10B.TTF', 10 * play_mode.camera_scale)
-            self.font_color = (0, 0, 255)
-            self.font_x, self.font_y = -10, 30
+        self.font = load_font('ENCR10B.TTF', 10 * play_mode.camera_scale)
+        self.font_color = (0, 0, 255)
+        self.font_x, self.font_y = -10, 30
         self.image_w, self.image_h = 100, 100
         self.state_machine = StateMachine(self)
         self.state_machine.start()
@@ -145,6 +146,10 @@ class Player:
 
 
     def update(self):
+        if self.x >= SCREEN_W - Background.goal_line:
+            if self.record <= 1.0:
+                self.goal = True
+                self.record = play_mode.real_time
         self.state_machine.update()
         self.x = clamp(50.0, self.x, play_mode.background.cw - 50.0)
         self.y = clamp(50.0, self.y, play_mode.background.ch - 50.0)
@@ -160,7 +165,7 @@ class Player:
         sw = self.w * play_mode.camera_scale
         sh = self.h * play_mode.camera_scale
 
-        self.font.draw(sx + sw / 2 + self.font_x * play_mode.camera_scale, sy + sh / 2 + self.font_y * play_mode.camera_scale, f'{abs(self.velocity / 20):.2f}', self.font_color)
+        self.font.draw(sx + sw / 2 + self.font_x * play_mode.camera_scale, sy + sh / 2 + self.font_y * play_mode.camera_scale, f'{abs(self.velocity / 10):.2f}km/s', self.font_color)
         if self.is_jump:
             self.images.clip_draw_to_origin(1 * self.image_w, self.animations.index(self.action) * self.image_h, self.image_w, self.image_h, sx, sy, sw, sh)
         else:
@@ -185,7 +190,7 @@ class Player:
 
 
     def set_font(self, name, size):
-        Player.font = load_font(name, size * play_mode.camera_scale)
+        self.font = load_font(name, size * play_mode.camera_scale)
 
 
     def get_scale(self):

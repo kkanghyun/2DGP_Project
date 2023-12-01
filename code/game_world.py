@@ -13,7 +13,7 @@ def add_objects(ol, depth = 0):
 
 def add_collision_pair(group, a = None, b = None):
     if group not in collision_pairs:
-        print(f'New group {group} added ...')
+        # print(f'New group {group} added ...')
         collision_pairs[group] = [ [], [] ]
     if a:
         collision_pairs[group][0].append(a)
@@ -41,7 +41,11 @@ def remove_collision_object(o):
 
 def clear():
     for layer in objects:
-        layer.clear()
+        for o in layer:
+            layer.remove(o)
+            remove_collision_object(o)
+            del o
+    layer.clear()
 
 
 def collide(a, b):
