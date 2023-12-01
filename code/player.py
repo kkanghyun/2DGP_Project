@@ -1,9 +1,9 @@
 from pico2d import draw_rectangle, clamp, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
 from game_utility import load_image, load_font, cal_speed_pps, SCREEN_W, SCREEN_H, GRAVITY, FRICTION_COEF
-from background import Background
 
 import game_engine
 import play_mode
+import background
 
 FRAMES_PER_ACTION = 8
 
@@ -146,7 +146,7 @@ class Player:
 
 
     def update(self):
-        if self.x >= SCREEN_W - Background.goal_line:
+        if self.x >= SCREEN_W - background.FixedBackground.goal_line:
             if self.record <= 1.0:
                 self.goal = True
                 self.record = play_mode.real_time

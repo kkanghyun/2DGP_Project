@@ -15,6 +15,8 @@ def init():
 
     running = True
     background = Background()
+    background.set_bgm('WzLogo.mp3')
+    background.set_volume(32)
     background.set_image('background_white.png')
     signature = load_image('signature.png')
     opacify_value = 0.0
@@ -27,6 +29,7 @@ def update():
     global signature
     global current_time
     global opacify_value
+    global background
     
     t = get_time() - current_time
     if t >= 10.0:
@@ -40,6 +43,7 @@ def update():
                 if opacify_value <= 0.0:
                     opacify_value = 0.0
         else:
+            background.play_sound()
             opacify_value += (1.0 / 3) * game_engine.delta_time
             if opacify_value >= 1.0:
                 opacify_value = 1.0
@@ -53,7 +57,7 @@ def draw():
 
     clear_canvas()
     background.draw()
-    signature.draw(SCREEN_W // 2, SCREEN_H // 2)
+    signature.draw(SCREEN_W // 2, SCREEN_H // 2, 200, 200)
     update_canvas()
 
 

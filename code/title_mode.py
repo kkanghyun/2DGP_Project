@@ -1,6 +1,5 @@
 from pico2d import clear_canvas, update_canvas, get_events, get_time, SDL_QUIT, SDL_KEYDOWN, SDLK_ESCAPE, SDLK_RETURN, SDLK_SPACE
 from game_utility import load_image, SCREEN_W, SCREEN_H
-from background import Background
 
 import game_engine
 import play_mode
@@ -12,8 +11,12 @@ def init():
     global press_start
     global press_start_enable
 
+    from background import Background
     background = Background()
     background.set_image('title_back.png')
+    background.set_bgm('Opening.mp3')
+    background.set_volume(32)
+    background.play_sound_repeat()
 
     press_start = load_image('press_start.png')
     press_start_enable = True
@@ -46,7 +49,7 @@ def draw():
 
 
 def finish():
-    pass
+    background.bgm.stop()
 
 
 def handle_events():

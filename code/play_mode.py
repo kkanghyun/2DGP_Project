@@ -1,5 +1,4 @@
 from pico2d import clear_canvas, update_canvas, get_events, get_time, load_font, SDL_QUIT, SDL_KEYDOWN, SDLK_ESCAPE
-from background import FixedBackground
 from player import Player
 from player_AI import Player_AI
 from hurdle import Hurdle
@@ -9,7 +8,7 @@ import game_engine
 import game_world
 import random
 import title_mode
-
+import background as back_module
 
 def handle_events():
     global game_start
@@ -35,6 +34,9 @@ def init():
     global time_font
     global real_time
     global end_time
+    global rank1_font
+    global rank2_font
+    global rank3_font
     global player1_font
     global player2_font
     global player3_font
@@ -45,6 +47,9 @@ def init():
     time_font = load_font(".\\res\\ENCR10B.TTF", 30)
     real_time = 0.0
     end_time = 0.0
+    rank1_font = load_font(".\\res\\ENCR10B.TTF", 40)
+    rank2_font = load_font(".\\res\\ENCR10B.TTF", 40)
+    rank3_font = load_font(".\\res\\ENCR10B.TTF", 40)
     player1_font = load_font(".\\res\\ENCR10B.TTF", 40)
     player2_font = load_font(".\\res\\ENCR10B.TTF", 40)
     player3_font = load_font(".\\res\\ENCR10B.TTF", 40)
@@ -58,6 +63,9 @@ def finish():
     global player
     global player_AI_list
     global hurdles_list
+    global background
+
+    del background.bgm_wav
 
     game_world.remove_object(player)
     for ai in player_AI_list:
@@ -77,10 +85,12 @@ def update():
     global player_AI_list
     global real_time
     global end_time
+    global background
 
     if get_time() - current_time >= 1:
         if get_time() - current_time >= 5:
             game_start = True
+            background.play_sound()
             real_time += game_engine.delta_time
         else:
             camera_scale += 2.0 * game_engine.delta_time
@@ -102,6 +112,9 @@ def draw():
     global real_time
     global player
     global player_AI_list
+    global rank1_font
+    global rank2_font
+    global rank3_font
     global player1_font
     global player2_font
     global player3_font
@@ -116,9 +129,41 @@ def draw():
             game_engine.change_mode(title_mode)
             return
         
+        player1_str = ''
+        player2_str = ''
+        player3_str = ''
+        if player_AI_list[0].record < player.record:
+            if player_AI_list[0].record < player_AI_list[1].record:
+                player1_str = '1st'
+            else:
+                player1_str = '2nd'
+        else:
+            player1_str = '3rd'
+            
+        if player.record < player_AI_list[0].record:
+            if player.record < player_AI_list[1].record:
+                player2_str = '1st'
+            else:
+                player2_str = '2nd'
+        else:
+            player2_str = '3rd'
+
+        if player_AI_list[1].record < player.record:
+            if player_AI_list[1].record < player_AI_list[0].record:
+                player3_str = '1st'
+            else:
+                player3_str = '2nd'
+        else:
+            player3_str = '3rd'
+        
         y1 = player_AI_list[0].y * camera_scale - background.window_bottom + 20
         y2 = player.y * camera_scale - background.window_bottom + 20
         y3 = player_AI_list[1].y * camera_scale - background.window_bottom + 20
+
+        rank1_font.draw(SCREEN_W // 2, y1 + 40, f'RANK : {player1_str}', (255, 100, 255))
+        rank2_font.draw(SCREEN_W // 2, y2 + 40, f'RANK : {player2_str}', (255, 100, 255))
+        rank3_font.draw(SCREEN_W // 2, y3 + 40, f'RANK : {player3_str}', (255, 100, 255))
+
         player1_font.draw(SCREEN_W // 2, y1, f'TIME : {player_AI_list[0].record:.2f}', (100, 255, 100))
         player2_font.draw(SCREEN_W // 2, y2, f'TIME : {player.record:.2f}', (100, 255, 100))
         player3_font.draw(SCREEN_W // 2, y3, f'TIME : {player_AI_list[1].record:.2f}', (100, 255, 100))
@@ -144,7 +189,12 @@ def create_objects():
 def create_background():
     global background
 
-    background = FixedBackground()
+    background = back_module.FixedBackground()
+    background.set_bgm('Intro.mp3')
+    background.set_volume(32)
+    background.set_bgm_wav('CheerUp.wav')
+    background.bgm_wav.set_volume(32)
+    background.bgm_wav.repeat_play()
     game_world.add_object(background, 0)
 
 
@@ -183,7 +233,7 @@ def create_player():
     player.set_font('ENCR10B.TTF', 10)
     player.set_size(50, 50)
     player.set_bb(10, 18, 10, 23)
-    game_world.add_object(player, 1)
+    game_world.add_object(player, 3)
     
     game_world.add_collision_pair('player:hurdle', player, None)
 
@@ -198,7 +248,7 @@ def create_AI():
     player.set_font('ENCR10B.TTF', 10)
     player.set_size(50, 50)
     player.set_bb(10, 18, 10, 23)
-    game_world.add_object(player, 1)
+    game_world.add_object(player, 3)
     game_world.add_collision_pair('player:hurdle', player, None)
 
     player_AI_list.append(player)
@@ -209,7 +259,7 @@ def create_AI():
     player.set_font('ENCR10B.TTF', 10)
     player.set_size(50, 50)
     player.set_bb(10, 18, 10, 23)
-    game_world.add_object(player, 1)
+    game_world.add_object(player, 3)
     game_world.add_collision_pair('player:hurdle', player, None)
 
     player_AI_list.append(player)
