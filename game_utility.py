@@ -11,25 +11,25 @@ FRICTION_COEF = 30.0
 
 
 def load_image(name):
-    add_path = '..\\res\\'
+    add_path = 'res\\'
     image = pico2d_load_image(add_path + name)
     return image
 
 
 def load_font(name, size):
-    add_path = '..\\res\\'
+    add_path = 'res\\'
     image = pico2d_load_font(add_path + name, int(size))
     return image
 
 
 def load_mp3(name):
-    add_path = '..\\res\\'
+    add_path = 'res\\'
     mp3 = pico2d_load_music(add_path + name)
     return mp3
 
 
 def load_wav(name):
-    add_path = '..\\res\\'
+    add_path = 'res\\'
     wav = pico2d_load_wav(add_path + name)
     return wav
 

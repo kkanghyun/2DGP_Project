@@ -56,6 +56,11 @@ class Run:
 
     @staticmethod
     def enter(player, e):
+        if left_up(e) or right_up(e):
+            if player.x == player.start_x:
+                player.state_machine.cur_state = Idle
+                return
+
         if right_down(e) or left_up(e): # 오른쪽으로 RUN
             player.dir, player.action = 'right', 'right_run'
         elif left_down(e) or right_up(e): # 왼쪽으로 RUN
