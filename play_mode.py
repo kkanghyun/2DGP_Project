@@ -100,7 +100,21 @@ def update():
             for ai in player_AI_list:
                 ai.set_font('ENCR10B.TTF', 10)
 
-    if player.goal == True:
+    if (player.goal == True and
+            player_AI_list[0].goal == True and
+            player_AI_list[1].goal == True):
+        players_record = [player_AI_list[0].record, player.record, player_AI_list[1].record]
+        players_record.sort(key=float)
+        rank_str = ['1st', '2nd', '3rd']
+        players = [player_AI_list[0], player, player_AI_list[1]]
+
+        for i, record in enumerate(players_record):
+            for obj in players:
+                if round(obj.record, 4) == round(record, 4):
+                    if len(obj.rank) > 1: continue
+                    obj.rank = rank_str[i]
+                    break
+
         end_time += game_engine.delta_time
 
     game_world.update()
@@ -129,44 +143,17 @@ def draw():
             game_engine.change_mode(title_mode)
             return
         
-        player1_str = ''
-        player2_str = ''
-        player3_str = ''
-        if player_AI_list[0].record < player.record:
-            if player_AI_list[0].record < player_AI_list[1].record:
-                player1_str = '1st'
-            else:
-                player1_str = '2nd'
-        else:
-            player1_str = '3rd'
-            
-        if player.record < player_AI_list[0].record:
-            if player.record < player_AI_list[1].record:
-                player2_str = '1st'
-            else:
-                player2_str = '2nd'
-        else:
-            player2_str = '3rd'
-
-        if player_AI_list[1].record < player.record:
-            if player_AI_list[1].record < player_AI_list[0].record:
-                player3_str = '1st'
-            else:
-                player3_str = '2nd'
-        else:
-            player3_str = '3rd'
-        
         y1 = player_AI_list[0].y * camera_scale - background.window_bottom + 20
         y2 = player.y * camera_scale - background.window_bottom + 20
         y3 = player_AI_list[1].y * camera_scale - background.window_bottom + 20
 
-        rank1_font.draw(SCREEN_W // 2, y1 + 40, f'RANK : {player1_str}', (255, 100, 255))
-        rank2_font.draw(SCREEN_W // 2, y2 + 40, f'RANK : {player2_str}', (255, 100, 255))
-        rank3_font.draw(SCREEN_W // 2, y3 + 40, f'RANK : {player3_str}', (255, 100, 255))
+        rank1_font.draw(SCREEN_W // 2 - 150, y1 + 40, f'RANK : {player_AI_list[0].rank}', (255, 100, 255))
+        rank2_font.draw(SCREEN_W // 2 - 150, y2 + 40, f'RANK : {player.rank}', (255, 100, 255))
+        rank3_font.draw(SCREEN_W // 2 - 150, y3 + 40, f'RANK : {player_AI_list[1].rank}', (255, 100, 255))
 
-        player1_font.draw(SCREEN_W // 2, y1, f'TIME : {player_AI_list[0].record:.2f}', (100, 255, 100))
-        player2_font.draw(SCREEN_W // 2, y2, f'TIME : {player.record:.2f}', (100, 255, 100))
-        player3_font.draw(SCREEN_W // 2, y3, f'TIME : {player_AI_list[1].record:.2f}', (100, 255, 100))
+        player1_font.draw(SCREEN_W // 2 - 150, y1, f'TIME : {player_AI_list[0].record:.3f}', (100, 255, 100))
+        player2_font.draw(SCREEN_W // 2 - 150, y2, f'TIME : {player.record:.3f}', (100, 255, 100))
+        player3_font.draw(SCREEN_W // 2 - 150, y3, f'TIME : {player_AI_list[1].record:.3f}', (100, 255, 100))
 
     update_canvas()
 
