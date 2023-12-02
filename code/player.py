@@ -132,7 +132,7 @@ class Player:
         self.velocity = 0.0 # m/s
         self.velocity_max = 200.0
         self.is_jump = False
-        self.jump_force = 1.4
+        self.jump_force = 1.6
         self.jump_velocity = 0.0
         if Player.images == None:
             Player.images = load_image('player.png')

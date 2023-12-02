@@ -84,7 +84,7 @@ class Player_AI:
         self.velocity = 0.0 # km/s
         self.velocity_max = 200.0
         self.is_jump = False
-        self.jump_force = 1.4
+        self.jump_force = 1.6
         self.jump_velocity = 0.0
         self.images = load_image('player.png')
         self.font = load_font('ENCR10B.TTF', 10 * play_mode.camera_scale)

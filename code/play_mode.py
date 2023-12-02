@@ -44,15 +44,15 @@ def init():
     game_start = False
     current_time = 0.0
     camera_scale = 1.0
-    time_font = load_font(".\\res\\ENCR10B.TTF", 30)
+    time_font = load_font("..\\res\\ENCR10B.TTF", 30)
     real_time = 0.0
     end_time = 0.0
-    rank1_font = load_font(".\\res\\ENCR10B.TTF", 40)
-    rank2_font = load_font(".\\res\\ENCR10B.TTF", 40)
-    rank3_font = load_font(".\\res\\ENCR10B.TTF", 40)
-    player1_font = load_font(".\\res\\ENCR10B.TTF", 40)
-    player2_font = load_font(".\\res\\ENCR10B.TTF", 40)
-    player3_font = load_font(".\\res\\ENCR10B.TTF", 40)
+    rank1_font = load_font("..\\res\\ENCR10B.TTF", 40)
+    rank2_font = load_font("..\\res\\ENCR10B.TTF", 40)
+    rank3_font = load_font("..\\res\\ENCR10B.TTF", 40)
+    player1_font = load_font("..\\res\\ENCR10B.TTF", 40)
+    player2_font = load_font("..\\res\\ENCR10B.TTF", 40)
+    player3_font = load_font("..\\res\\ENCR10B.TTF", 40)
 
     create_objects()
 
